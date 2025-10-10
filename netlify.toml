@@ -1,6 +1,6 @@
 # Netlify configuration for Wedding Invitation
 [build]
-  command = "npm ci && npm run build"
+  command = "pnpm install --frozen-lockfile && pnpm run build"
   publish = "dist"
 
 # Environment variables (alternative method)
