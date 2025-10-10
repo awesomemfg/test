@@ -1,7 +1,11 @@
 # Netlify configuration for Wedding Invitation
 [build]
-  command = "pnpm install && pnpm run build"
+  command = "npm ci && npm run build"
   publish = "dist"
+
+# Environment variables (alternative method)
+[build.environment]
+  NODE_VERSION = "18"
 
 [[redirects]]
   from = "/*"
