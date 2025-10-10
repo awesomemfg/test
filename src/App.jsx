@@ -201,16 +201,19 @@ function App() {
                 </CardHeader>
                 <CardContent className="text-center space-y-4">
                   <p className="text-gray-600">Can't attend in person? Join us via Zoom!</p>
-                  <a 
-                    href="YOUR_ZOOM_LINK_HERE" 
-                    target="_blank" 
+                  <a
+                    href="https://zoom.us/j/MEETING_ID?pwd=PASSCODE" 
+                    target="_blank"
                     rel="noopener noreferrer"
                   >
                     <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                       Join Zoom Meeting
                     </Button>
                   </a>
-                  <p className="text-sm text-gray-500">Meeting ID and password will be provided closer to the date</p>
+                  <div className="text-sm text-gray-500 space-y-1">
+                    <p>Meeting ID: <span className="font-medium">MEETING_ID</span></p>
+                    <p>Passcode: <span className="font-medium">PASSCODE</span></p>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -376,29 +379,21 @@ function App() {
                       <div className="grid grid-cols-2 gap-4">
                         {/* QR Code 1 */}
                         <div className="bg-blue-50 p-4 rounded-lg flex flex-col items-center">
-                          <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-lg flex items-center justify-center mb-2">
-                            <div className="text-center">
-                              <svg className="w-12 h-12 mx-auto text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                              </svg>
-                              <p className="text-xs text-gray-600">QR Code 1</p>
-                              <p className="text-xs text-gray-500 mt-1">Replace with your QR</p>
-                            </div>
-                          </div>
+                          <img
+                            src="/qr-bank.svg"
+                            alt="Bank transfer QR placeholder"
+                            className="w-32 h-32 rounded-lg border border-blue-100 object-contain mb-2 bg-white"
+                          />
                           <p className="text-sm font-medium text-gray-700">Bank Transfer</p>
                         </div>
 
                         {/* QR Code 2 */}
                         <div className="bg-blue-50 p-4 rounded-lg flex flex-col items-center">
-                          <div className="w-32 h-32 bg-gradient-to-br from-cyan-100 to-sky-100 rounded-lg flex items-center justify-center mb-2">
-                            <div className="text-center">
-                              <svg className="w-12 h-12 mx-auto text-cyan-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                              </svg>
-                              <p className="text-xs text-gray-600">QR Code 2</p>
-                              <p className="text-xs text-gray-500 mt-1">Replace with your QR</p>
-                            </div>
-                          </div>
+                          <img
+                            src="/qr-ewallet.svg"
+                            alt="E-wallet QR placeholder"
+                            className="w-32 h-32 rounded-lg border border-blue-100 object-contain mb-2 bg-white"
+                          />
                           <p className="text-sm font-medium text-gray-700">E-Wallet</p>
                         </div>
                       </div>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <rect width="256" height="256" rx="16" fill="#ffffff"/>
+  <rect x="16" y="16" width="224" height="96" fill="#e0f2fe" stroke="#7dd3fc"/>
+  <rect x="32" y="32" width="64" height="64" fill="#06b6d4"/>
+  <rect x="112" y="32" width="32" height="16" fill="#0891b2"/>
+  <rect x="112" y="56" width="16" height="24" fill="#22d3ee"/>
+  <rect x="136" y="56" width="24" height="24" fill="#0891b2"/>
+  <rect x="16" y="128" width="224" height="16" fill="#e5e7eb"/>
+  <rect x="16" y="152" width="96" height="88" fill="#eff6ff" stroke="#93c5fd"/>
+  <rect x="128" y="152" width="112" height="88" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="32" y="180" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f2937">E-Wallet QR</text>
+  <text x="144" y="180" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f2937">Scan to pay</text>
+</svg>

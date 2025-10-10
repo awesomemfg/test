@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <rect width="256" height="256" rx="16" fill="#ffffff"/>
+  <rect x="16" y="16" width="64" height="64" fill="#2563eb"/>
+  <rect x="96" y="16" width="48" height="16" fill="#1d4ed8"/>
+  <rect x="96" y="40" width="16" height="24" fill="#3b82f6"/>
+  <rect x="120" y="40" width="24" height="24" fill="#1d4ed8"/>
+  <rect x="16" y="96" width="16" height="48" fill="#60a5fa"/>
+  <rect x="40" y="96" width="40" height="16" fill="#1d4ed8"/>
+  <rect x="40" y="120" width="16" height="24" fill="#3b82f6"/>
+  <rect x="72" y="120" width="8" height="24" fill="#2563eb"/>
+  <rect x="160" y="16" width="80" height="80" fill="#bfdbfe"/>
+  <rect x="176" y="32" width="16" height="16" fill="#1d4ed8"/>
+  <rect x="208" y="32" width="16" height="16" fill="#2563eb"/>
+  <rect x="192" y="64" width="16" height="16" fill="#1d4ed8"/>
+  <rect x="16" y="160" width="224" height="16" fill="#e5e7eb"/>
+  <rect x="16" y="184" width="96" height="56" fill="#eff6ff" stroke="#93c5fd"/>
+  <rect x="128" y="184" width="112" height="56" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="32" y="208" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f2937">Bank QR</text>
+  <text x="144" y="208" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#1f2937">Scan to pay</text>
+</svg>
