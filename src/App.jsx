@@ -73,22 +73,33 @@ function App() {
   const handleSubmitWish = async (e) => {
     e.preventDefault()
     if (wishName.trim() && wishMessage.trim()) {
-      const { data, error } = await supabase
-        .from('wishes')
-        .insert([
-          { name: wishName, message: wishMessage }
-        ])
-        .select()
-      
-      if (error) {
-        console.error('Error submitting wish:', error)
-        alert('Failed to submit wish. Please try again.')
-      } else {
-        // Refresh wishes list
-        fetchWishes()
-        setWishName('')
-        setWishMessage('')
+      try {
+        console.log('Submitting wish:', { name: wishName, message: wishMessage })
+        
+        const { data, error } = await supabase
+          .from('wishes')
+          .insert([
+            { name: wishName, message: wishMessage }
+          ])
+          .select()
+        
+        if (error) {
+          console.error('Error submitting wish:', error)
+          alert(`Failed to submit wish: ${error}`)
+        } else {
+          console.log('Wish submitted successfully:', data)
+          // Refresh wishes list
+          fetchWishes()
+          setWishName('')
+          setWishMessage('')
+          alert('Thank you! Your wish has been submitted successfully.')
+        }
+      } catch (error) {
+        console.error('Unexpected error:', error)
+        alert('An unexpected error occurred. Please check the console for details.')
       }
+    } else {
+      alert('Please fill in both your name and message.')
     }
   }
 

@@ -1,14 +1,14 @@
 import { initializeApp } from 'firebase/app'
-import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from 'firebase/firestore'
+import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp, connectFirestoreEmulator } from 'firebase/firestore'
 
 // Firebase configuration - replace with your actual config
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "your-api-key",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "your-project.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "your-project-id",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "your-project.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abcdef"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBkxmSs7fGxkgLYza2GHzjpqJkoygtHVsI",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "test-2b9ee.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "test-2b9ee",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "test-2b9ee.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "7375017909",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:7375017909:web:69aca166f1017014b42bfc"
 }
 
 // Initialize Firebase
@@ -36,7 +36,8 @@ export const supabase = {
               return { data, error: null }
             } catch (error) {
               console.error('Firebase select error:', error)
-              return { data: [], error: error.message }
+              // Return empty array instead of failing completely
+              return { data: [], error: null }
             }
           }
         }
@@ -56,7 +57,10 @@ export const supabase = {
                   created_at: serverTimestamp()
                 }
                 
+                console.log('Attempting to add document:', docData)
                 const docRef = await addDoc(wishesRef, docData)
+                console.log('Document added successfully with ID:', docRef.id)
+                
                 insertedData.push({
                   id: docRef.id,
                   ...docData,
@@ -67,7 +71,23 @@ export const supabase = {
               return { data: insertedData, error: null }
             } catch (error) {
               console.error('Firebase insert error:', error)
-              return { data: [], error: error.message }
+              console.error('Error details:', {
+                code: error.code,
+                message: error.message,
+                details: error
+              })
+              
+              // Return a more helpful error message
+              let errorMessage = 'Failed to save wish. '
+              if (error.code === 'permission-denied') {
+                errorMessage += 'Please check if Firestore rules allow writing to the wishes collection.'
+              } else if (error.code === 'unavailable') {
+                errorMessage += 'Firebase service is temporarily unavailable. Please try again.'
+              } else {
+                errorMessage += error.message
+              }
+              
+              return { data: [], error: errorMessage }
             }
           }
         }
