@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input.jsx'
 import { Textarea } from '@/components/ui/textarea.jsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Heart, MapPin, Calendar, Clock, Send } from 'lucide-react'
+import { supabase } from './lib/supabase'
 import './App.css'
 
 function App() {
@@ -30,13 +31,23 @@ function App() {
     }
   }, [])
 
-  // Load wishes from localStorage
+  // Load wishes from Supabase database
   useEffect(() => {
-    const savedWishes = localStorage.getItem('weddingWishes')
-    if (savedWishes) {
-      setWishes(JSON.parse(savedWishes))
-    }
+    fetchWishes()
   }, [])
+
+  const fetchWishes = async () => {
+    const { data, error } = await supabase
+      .from('wishes')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (error) {
+      console.error('Error fetching wishes:', error)
+    } else {
+      setWishes(data || [])
+    }
+  }
 
   // Countdown timer
   useEffect(() => {
@@ -59,43 +70,48 @@ function App() {
     return () => clearInterval(timer)
   }, [])
 
-  const handleSubmitWish = (e) => {
+  const handleSubmitWish = async (e) => {
     e.preventDefault()
     if (wishName.trim() && wishMessage.trim()) {
-      const newWish = {
-        id: Date.now(),
-        name: wishName,
-        message: wishMessage,
-        timestamp: new Date().toISOString()
+      const { data, error } = await supabase
+        .from('wishes')
+        .insert([
+          { name: wishName, message: wishMessage }
+        ])
+        .select()
+      
+      if (error) {
+        console.error('Error submitting wish:', error)
+        alert('Failed to submit wish. Please try again.')
+      } else {
+        // Refresh wishes list
+        fetchWishes()
+        setWishName('')
+        setWishMessage('')
       }
-      const updatedWishes = [newWish, ...wishes]
-      setWishes(updatedWishes)
-      localStorage.setItem('weddingWishes', JSON.stringify(updatedWishes))
-      setWishName('')
-      setWishMessage('')
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-rose-100/50 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-100/50 to-transparent"></div>
         <div className="container mx-auto px-4 py-16 relative">
           <div className="text-center space-y-8 animate-fade-in">
             {/* Invitation Header */}
             <div className="space-y-4">
-              <Heart className="w-16 h-16 mx-auto text-rose-500 animate-pulse" />
-              <h2 className="text-2xl md:text-3xl font-light text-gray-600 tracking-wide">
-                You are invited to
-              </h2>
+              <Heart className="w-16 h-16 mx-auto text-blue-500 animate-pulse" />
               {guestName && (
-                <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6 max-w-md mx-auto border-2 border-rose-200">
-                  <p className="text-3xl md:text-4xl font-serif text-rose-600 font-semibold">
+                <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6 max-w-md mx-auto border-2 border-blue-200">
+                  <p className="text-3xl md:text-4xl font-serif text-blue-600 font-semibold">
                     {guestName}
                   </p>
                 </div>
               )}
+              <h2 className="text-2xl md:text-3xl font-light text-gray-600 tracking-wide">
+                You are invited to
+              </h2>
             </div>
 
             {/* Main Title */}
@@ -106,8 +122,8 @@ function App() {
               
               {/* Bride and Groom Names */}
               <div className="space-y-8 max-w-4xl mx-auto">
-                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-rose-100">
-                  <h2 className="text-3xl md:text-5xl font-serif text-rose-700 mb-4 leading-relaxed">
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-blue-100">
+                  <h2 className="text-3xl md:text-5xl font-serif text-blue-700 mb-4 leading-relaxed">
                     Muhamad Farid Geonova, S.T.
                   </h2>
                   <p className="text-lg md:text-xl text-gray-600 font-light">
@@ -115,10 +131,10 @@ function App() {
                   </p>
                 </div>
 
-                <div className="text-5xl text-rose-400 font-light">&</div>
+                <div className="text-5xl text-blue-400 font-light">&</div>
 
-                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-rose-100">
-                  <h2 className="text-3xl md:text-5xl font-serif text-rose-700 mb-4 leading-relaxed">
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-blue-100">
+                  <h2 className="text-3xl md:text-5xl font-serif text-blue-700 mb-4 leading-relaxed">
                     Irfianti Nur Jannah, S.T., M.M.
                   </h2>
                   <p className="text-lg md:text-xl text-gray-600 font-light">
@@ -130,9 +146,9 @@ function App() {
 
             {/* Date and Location */}
             <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-12">
-              <Card className="bg-white/90 backdrop-blur-sm border-rose-100 shadow-lg hover:shadow-xl transition-shadow">
+              <Card className="bg-white/90 backdrop-blur-sm border-blue-100 shadow-lg hover:shadow-xl transition-shadow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-rose-700">
+                  <CardTitle className="flex items-center gap-2 text-blue-700">
                     <Calendar className="w-6 h-6" />
                     Date & Time
                   </CardTitle>
@@ -146,9 +162,9 @@ function App() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/90 backdrop-blur-sm border-rose-100 shadow-lg hover:shadow-xl transition-shadow">
+              <Card className="bg-white/90 backdrop-blur-sm border-blue-100 shadow-lg hover:shadow-xl transition-shadow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-rose-700">
+                  <CardTitle className="flex items-center gap-2 text-blue-700">
                     <MapPin className="w-6 h-6" />
                     Location
                   </CardTitle>
@@ -164,7 +180,7 @@ function App() {
                     rel="noopener noreferrer"
                     className="inline-block mt-2"
                   >
-                    <Button variant="outline" size="sm" className="text-rose-600 border-rose-300 hover:bg-rose-50">
+                    <Button variant="outline" size="sm" className="text-blue-600 border-blue-300 hover:bg-blue-50">
                       Open in Maps
                     </Button>
                   </a>
@@ -172,9 +188,36 @@ function App() {
               </Card>
             </div>
 
+            {/* Virtual Attendance - Zoom Link */}
+            <div className="max-w-4xl mx-auto mt-8">
+              <Card className="bg-white/90 backdrop-blur-sm border-blue-100 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-blue-700 justify-center">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M5 3C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3H5M5 5H19V19H5V5M7 7V17H17V7H7Z"/>
+                    </svg>
+                    Join Us Virtually
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-center space-y-4">
+                  <p className="text-gray-600">Can't attend in person? Join us via Zoom!</p>
+                  <a 
+                    href="YOUR_ZOOM_LINK_HERE" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                      Join Zoom Meeting
+                    </Button>
+                  </a>
+                  <p className="text-sm text-gray-500">Meeting ID and password will be provided closer to the date</p>
+                </CardContent>
+              </Card>
+            </div>
+
             {/* Countdown Timer */}
             <div className="max-w-4xl mx-auto mt-12">
-              <Card className="bg-gradient-to-r from-rose-500 to-pink-500 text-white border-0 shadow-2xl">
+              <Card className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0 shadow-2xl">
                 <CardContent className="p-8">
                   <h3 className="text-2xl md:text-3xl font-serif mb-6">Counting Down To Our Special Day</h3>
                   <div className="grid grid-cols-4 gap-4 md:gap-8">
@@ -201,13 +244,13 @@ function App() {
 
             {/* Quranic Verse */}
             <div className="max-w-3xl mx-auto mt-16">
-              <Card className="bg-white/95 backdrop-blur-sm border-rose-200 shadow-xl">
+              <Card className="bg-white/95 backdrop-blur-sm border-blue-200 shadow-xl">
                 <CardContent className="p-8 md:p-12 space-y-6">
                   <div className="text-center">
-                    <p className="text-lg md:text-xl font-semibold text-rose-700 mb-4">
+                    <p className="text-lg md:text-xl font-semibold text-blue-700 mb-4">
                       QS Ar-Rum: 21
                     </p>
-                    <div className="h-px bg-gradient-to-r from-transparent via-rose-300 to-transparent mb-6"></div>
+                    <div className="h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent mb-6"></div>
                     <p className="text-lg md:text-2xl text-gray-700 leading-relaxed italic font-serif">
                       "And of His signs is that He created for you from yourselves mates that you may find tranquility in them; and He placed between you affection and mercy. Indeed in that are signs for a people who give thought."
                     </p>
@@ -223,9 +266,9 @@ function App() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Photo 1 */}
                 <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gradient-to-br from-rose-200 to-pink-200 flex items-center justify-center">
+                  <div className="aspect-square bg-gradient-to-br from-blue-200 to-cyan-200 flex items-center justify-center">
                     <div className="text-center p-8">
-                      <Heart className="w-16 h-16 mx-auto mb-4 text-rose-400" />
+                      <Heart className="w-16 h-16 mx-auto mb-4 text-blue-400" />
                       <p className="text-gray-600 font-medium">Photo 1</p>
                       <p className="text-sm text-gray-500 mt-2">Replace with your photo</p>
                     </div>
@@ -235,9 +278,9 @@ function App() {
 
                 {/* Photo 2 */}
                 <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gradient-to-br from-pink-200 to-purple-200 flex items-center justify-center">
+                  <div className="aspect-square bg-gradient-to-br from-cyan-200 to-sky-200 flex items-center justify-center">
                     <div className="text-center p-8">
-                      <Heart className="w-16 h-16 mx-auto mb-4 text-pink-400" />
+                      <Heart className="w-16 h-16 mx-auto mb-4 text-cyan-400" />
                       <p className="text-gray-600 font-medium">Photo 2</p>
                       <p className="text-sm text-gray-500 mt-2">Replace with your photo</p>
                     </div>
@@ -247,9 +290,9 @@ function App() {
 
                 {/* Photo 3 */}
                 <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gradient-to-br from-purple-200 to-rose-200 flex items-center justify-center">
+                  <div className="aspect-square bg-gradient-to-br from-sky-200 to-blue-200 flex items-center justify-center">
                     <div className="text-center p-8">
-                      <Heart className="w-16 h-16 mx-auto mb-4 text-purple-400" />
+                      <Heart className="w-16 h-16 mx-auto mb-4 text-sky-400" />
                       <p className="text-gray-600 font-medium">Photo 3</p>
                       <p className="text-sm text-gray-500 mt-2">Replace with your photo</p>
                     </div>
@@ -259,9 +302,9 @@ function App() {
 
                 {/* Photo 4 */}
                 <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gradient-to-br from-rose-200 to-orange-200 flex items-center justify-center">
+                  <div className="aspect-square bg-gradient-to-br from-blue-200 to-indigo-200 flex items-center justify-center">
                     <div className="text-center p-8">
-                      <Heart className="w-16 h-16 mx-auto mb-4 text-orange-400" />
+                      <Heart className="w-16 h-16 mx-auto mb-4 text-indigo-400" />
                       <p className="text-gray-600 font-medium">Photo 4</p>
                       <p className="text-sm text-gray-500 mt-2">Replace with your photo</p>
                     </div>
@@ -271,9 +314,9 @@ function App() {
 
                 {/* Photo 5 */}
                 <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gradient-to-br from-pink-200 to-rose-200 flex items-center justify-center">
+                  <div className="aspect-square bg-gradient-to-br from-cyan-200 to-blue-200 flex items-center justify-center">
                     <div className="text-center p-8">
-                      <Heart className="w-16 h-16 mx-auto mb-4 text-rose-400" />
+                      <Heart className="w-16 h-16 mx-auto mb-4 text-blue-400" />
                       <p className="text-gray-600 font-medium">Photo 5</p>
                       <p className="text-sm text-gray-500 mt-2">Replace with your photo</p>
                     </div>
@@ -283,9 +326,9 @@ function App() {
 
                 {/* Photo 6 */}
                 <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center">
+                  <div className="aspect-square bg-gradient-to-br from-sky-200 to-cyan-200 flex items-center justify-center">
                     <div className="text-center p-8">
-                      <Heart className="w-16 h-16 mx-auto mb-4 text-pink-400" />
+                      <Heart className="w-16 h-16 mx-auto mb-4 text-cyan-400" />
                       <p className="text-gray-600 font-medium">Photo 6</p>
                       <p className="text-sm text-gray-500 mt-2">Replace with your photo</p>
                     </div>
@@ -295,12 +338,88 @@ function App() {
               </div>
             </div>
 
+            {/* Bank Donation Section */}
+            <div className="max-w-4xl mx-auto mt-16">
+              <h2 className="text-3xl md:text-4xl font-serif text-gray-800 text-center mb-8">Wedding Gift</h2>
+              <Card className="bg-white/95 backdrop-blur-sm border-blue-200 shadow-xl">
+                <CardContent className="p-8 md:p-12">
+                  <div className="text-center mb-8">
+                    <p className="text-lg text-gray-700 mb-4">
+                      Your presence at our wedding is the greatest gift of all. However, if you wish to honor us with a gift, 
+                      we would be grateful for a contribution towards our future together.
+                    </p>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {/* Bank Account Details */}
+                    <div className="space-y-4">
+                      <h3 className="text-xl font-semibold text-blue-700 mb-4">Bank Transfer</h3>
+                      <div className="bg-blue-50 p-6 rounded-lg space-y-3">
+                        <div>
+                          <p className="text-sm text-gray-600">Bank Name</p>
+                          <p className="text-lg font-semibold text-gray-800">YOUR BANK NAME</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Account Name</p>
+                          <p className="text-lg font-semibold text-gray-800">YOUR ACCOUNT NAME</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Account Number</p>
+                          <p className="text-lg font-semibold text-gray-800">1234567890</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* QR Codes */}
+                    <div className="space-y-4">
+                      <h3 className="text-xl font-semibold text-blue-700 mb-4">Scan QR Code</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* QR Code 1 */}
+                        <div className="bg-blue-50 p-4 rounded-lg flex flex-col items-center">
+                          <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-lg flex items-center justify-center mb-2">
+                            <div className="text-center">
+                              <svg className="w-12 h-12 mx-auto text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                              </svg>
+                              <p className="text-xs text-gray-600">QR Code 1</p>
+                              <p className="text-xs text-gray-500 mt-1">Replace with your QR</p>
+                            </div>
+                          </div>
+                          <p className="text-sm font-medium text-gray-700">Bank Transfer</p>
+                        </div>
+
+                        {/* QR Code 2 */}
+                        <div className="bg-blue-50 p-4 rounded-lg flex flex-col items-center">
+                          <div className="w-32 h-32 bg-gradient-to-br from-cyan-100 to-sky-100 rounded-lg flex items-center justify-center mb-2">
+                            <div className="text-center">
+                              <svg className="w-12 h-12 mx-auto text-cyan-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                              </svg>
+                              <p className="text-xs text-gray-600">QR Code 2</p>
+                              <p className="text-xs text-gray-500 mt-1">Replace with your QR</p>
+                            </div>
+                          </div>
+                          <p className="text-sm font-medium text-gray-700">E-Wallet</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-center mt-8">
+                    <p className="text-sm text-gray-600 italic">
+                      Thank you for your love and generosity! 💙
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             {/* Wishes Section */}
             <div className="max-w-4xl mx-auto mt-16 space-y-8">
               <h2 className="text-3xl md:text-4xl font-serif text-gray-800">Send Your Wishes</h2>
               
               {/* Wish Form */}
-              <Card className="bg-white/95 backdrop-blur-sm border-rose-200 shadow-xl">
+              <Card className="bg-white/95 backdrop-blur-sm border-blue-200 shadow-xl">
                 <CardContent className="p-6 md:p-8">
                   <form onSubmit={handleSubmitWish} className="space-y-4">
                     <div>
@@ -314,7 +433,7 @@ function App() {
                         value={wishName}
                         onChange={(e) => setWishName(e.target.value)}
                         required
-                        className="border-rose-200 focus:border-rose-400 focus:ring-rose-400"
+                        className="border-blue-200 focus:border-blue-400 focus:ring-blue-400"
                       />
                     </div>
                     <div>
@@ -328,12 +447,12 @@ function App() {
                         onChange={(e) => setWishMessage(e.target.value)}
                         required
                         rows={4}
-                        className="border-rose-200 focus:border-rose-400 focus:ring-rose-400"
+                        className="border-blue-200 focus:border-blue-400 focus:ring-blue-400"
                       />
                     </div>
                     <Button 
                       type="submit" 
-                      className="w-full bg-rose-500 hover:bg-rose-600 text-white"
+                      className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                     >
                       <Send className="w-4 h-4 mr-2" />
                       Send Wishes
@@ -348,7 +467,7 @@ function App() {
                   Wishes from Friends & Family ({wishes.length})
                 </h3>
                 {wishes.length === 0 ? (
-                  <Card className="bg-white/90 backdrop-blur-sm border-rose-100">
+                  <Card className="bg-white/90 backdrop-blur-sm border-blue-100">
                     <CardContent className="p-8 text-center text-gray-500">
                       No wishes yet. Be the first to send your wishes!
                     </CardContent>
@@ -356,17 +475,17 @@ function App() {
                 ) : (
                   <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                     {wishes.map((wish) => (
-                      <Card key={wish.id} className="bg-white/90 backdrop-blur-sm border-rose-100 shadow-md hover:shadow-lg transition-shadow">
+                      <Card key={wish.id} className="bg-white/90 backdrop-blur-sm border-blue-100 shadow-md hover:shadow-lg transition-shadow">
                         <CardContent className="p-6">
                           <div className="flex items-start gap-4">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-400 to-pink-400 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white font-semibold flex-shrink-0">
                               {wish.name.charAt(0).toUpperCase()}
                             </div>
                             <div className="flex-1">
                               <div className="flex items-center justify-between mb-2">
                                 <h4 className="font-semibold text-gray-800">{wish.name}</h4>
                                 <span className="text-xs text-gray-500">
-                                  {new Date(wish.timestamp).toLocaleDateString()}
+                                  {new Date(wish.created_at).toLocaleDateString()}
                                 </span>
                               </div>
                               <p className="text-gray-700 leading-relaxed">{wish.message}</p>
@@ -382,7 +501,7 @@ function App() {
 
             {/* Footer */}
             <div className="mt-16 pb-8 text-center text-gray-600">
-              <Heart className="w-8 h-8 mx-auto mb-4 text-rose-400" />
+              <Heart className="w-8 h-8 mx-auto mb-4 text-blue-400" />
               <p className="text-lg font-serif">
                 We can't wait to celebrate with you!
               </p>
