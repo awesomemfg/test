@@ -202,7 +202,7 @@ function App() {
                 <CardContent className="text-center space-y-4">
                   <p className="text-gray-600">Can't attend in person? Join us via Zoom!</p>
                   <a
-                    href={`https://zoom.us/j/${import.meta.env.VITE_ZOOM_MEETING_ID}?pwd=${import.meta.env.VITE_ZOOM_PASSCODE}`} 
+                    href={`https://lsu.zoom.us/j/4906157210?omn=98375303152`} 
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -341,46 +341,58 @@ function App() {
               </div>
             </div>
 
-            {/* Bank Donation Section */}
-            <div className="max-w-4xl mx-auto mt-16">
-              <h2 className="text-3xl md:text-4xl font-serif text-gray-800 text-center mb-8">Wedding Gift</h2>
-              <Card className="bg-white/95 backdrop-blur-sm border-blue-200 shadow-xl">
-                <CardContent className="p-8 md:p-12">
-                  <div className="text-center mb-8">
-                    <p className="text-lg text-gray-700 mb-4">
-                      Your presence at our wedding is the greatest gift of all. However, if you wish to honor us with a gift, 
-                      we would be grateful for a contribution towards our future together.
-                    </p>
-                  </div>
+            /* Bank Donation Section */}
+                  <div className="max-w-4xl mx-auto mt-16">
+                    <h2 className="text-3xl md:text-4xl font-serif text-gray-800 text-center mb-8">Wedding Gift</h2>
+                    <Card className="bg-white/95 backdrop-blur-sm border-blue-200 shadow-xl">
+                    <CardContent className="p-8 md:p-12">
+                      <div className="text-center mb-8">
+                      <p className="text-lg text-gray-700 mb-4">
+                        Your presence at our wedding is the greatest gift of all. However, if you wish to honor us with a gift, 
+                        we would be grateful for a contribution towards our future together.
+                      </p>
+                      </div>
 
-                  <div className="grid md:grid-cols-2 gap-8">
-                    {/* Bank Account Details */}
-                    <div className="space-y-4">
-                      <h3 className="text-xl font-semibold text-blue-700 mb-4">Bank Transfer</h3>
-                      <div className="bg-blue-50 p-6 rounded-lg space-y-3">
+                      <div className="grid md:grid-cols-2 gap-8">
+                      {/* Bank Account Details */}
+                      <div className="space-y-4">
+                        <h3 className="text-xl font-semibold text-blue-700 mb-4">Bank Transfer</h3>
+                        <div className="bg-blue-50 p-6 rounded-lg space-y-3">
                         <div>
                           <p className="text-sm text-gray-600">Bank Name</p>
-                          <p className="text-lg font-semibold text-gray-800">YOUR BANK NAME</p>
+                          <p className="text-lg font-semibold text-gray-800">Bank Rankyat Indonesia</p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">Account Name</p>
-                          <p className="text-lg font-semibold text-gray-800">YOUR ACCOUNT NAME</p>
+                          <p className="text-lg font-semibold text-gray-800">Muhamad Farid Geonova</p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">Account Number</p>
-                          <p className="text-lg font-semibold text-gray-800">1234567890</p>
+                          <p className="text-lg font-semibold text-gray-800">035601076763504</p>
+                        </div>
+                        </div>
+                        {/* Zelle Option */}
+                        <h3 className="text-xl font-semibold text-blue-700 mb-4 mt-8">Zelle</h3>
+                        <div className="bg-blue-50 p-6 rounded-lg space-y-3">
+                        <div>
+                          <p className="text-sm text-gray-600">Zelle Email</p>
+                          <p className="text-lg font-semibold text-gray-800">mgeono1@lsu.edu</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Account Name</p>
+                          <p className="text-lg font-semibold text-gray-800">Muhamad Farid Geonova</p>
+                        </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* QR Codes */}
+                      {/* QR Codes */}}
                     <div className="space-y-4">
                       <h3 className="text-xl font-semibold text-blue-700 mb-4">Scan QR Code</h3>
                       <div className="grid grid-cols-2 gap-4">
                         {/* QR Code 1 */}
                         <div className="bg-blue-50 p-4 rounded-lg flex flex-col items-center">
                           <img
-                            src="/qr-bank.svg"
+                            src="/qr-bank.png"
                             alt="Bank transfer QR placeholder"
                             className="w-32 h-32 rounded-lg border border-blue-100 object-contain mb-2 bg-white"
                           />

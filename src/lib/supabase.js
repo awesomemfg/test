@@ -1,90 +1,77 @@
-// Lightweight browser-safe mock of Supabase client for the "wishes" table.
-// It provides the minimal API used by App.jsx: from('wishes').select().order() and insert().select().
-// Data persists in localStorage at runtime (client only). During build (SSR), no storage is touched.
+import { initializeApp } from 'firebase/app'
+import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from 'firebase/firestore'
 
-const isBrowser = typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
-const STORAGE_KEY = 'wishes'
-
-function loadWishes() {
-  if (!isBrowser) return []
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
+// Firebase configuration - replace with your actual config
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "your-api-key",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "your-project.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "your-project-id",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "your-project.appspot.com",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abcdef"
 }
 
-function saveWishes(list) {
-  if (!isBrowser) return
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
-  } catch {
-    // ignore write errors
-  }
-}
+// Initialize Firebase
+const app = initializeApp(firebaseConfig)
+const db = getFirestore(app)
 
-function orderByCreatedAt(data, ascending = false) {
-  const arr = Array.isArray(data) ? [...data] : []
-  arr.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-  return ascending ? arr : arr.reverse()
-}
-
-const supabase = {
-  from(table) {
-    // Only the 'wishes' table is supported in this mock
-    if (table !== 'wishes') {
-      return {
-        select() {
-          return {
-            order() {
-              return Promise.resolve({ data: [], error: null })
-            },
-          }
-        },
-        insert() {
-          return {
-            select() {
-              return Promise.resolve({ data: [], error: new Error('Unsupported table in mock') })
-            },
-          }
-        },
-      }
-    }
-
+// Supabase-compatible API wrapper for Firebase
+export const supabase = {
+  from(tableName) {
     return {
-      select() {
-        const data = loadWishes()
+      async select(fields = '*') {
         return {
-          order(column, options = {}) {
-            if (column === 'created_at') {
-              const sorted = orderByCreatedAt(data, options.ascending)
-              return Promise.resolve({ data: sorted, error: null })
+          async order(column, options = {}) {
+            try {
+              const wishesRef = collection(db, tableName)
+              const q = query(wishesRef, orderBy(column, options.ascending ? 'asc' : 'desc'))
+              const querySnapshot = await getDocs(q)
+              
+              const data = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                created_at: doc.data().created_at?.toDate?.()?.toISOString() || new Date().toISOString()
+              }))
+              
+              return { data, error: null }
+            } catch (error) {
+              console.error('Firebase select error:', error)
+              return { data: [], error: error.message }
             }
-            return Promise.resolve({ data, error: null })
-          },
+          }
         }
       },
 
       insert(rows) {
-        const now = new Date().toISOString()
-        const items = (rows || []).map((r, i) => ({
-          id: Date.now() + i,
-          name: r?.name ?? 'Anonymous',
-          message: r?.message ?? '',
-          created_at: now,
-        }))
-        const current = loadWishes()
-        const next = current.concat(items)
-        saveWishes(next)
         return {
-          select() {
-            return Promise.resolve({ data: items, error: null })
-          },
+          async select() {
+            try {
+              const wishesRef = collection(db, tableName)
+              const insertedData = []
+              
+              for (const row of rows) {
+                const docData = {
+                  name: row.name || 'Anonymous',
+                  message: row.message || '',
+                  created_at: serverTimestamp()
+                }
+                
+                const docRef = await addDoc(wishesRef, docData)
+                insertedData.push({
+                  id: docRef.id,
+                  ...docData,
+                  created_at: new Date().toISOString()
+                })
+              }
+              
+              return { data: insertedData, error: null }
+            } catch (error) {
+              console.error('Firebase insert error:', error)
+              return { data: [], error: error.message }
+            }
+          }
         }
-      },
+      }
     }
-  },
+  }
 }
-
-export { supabase }
