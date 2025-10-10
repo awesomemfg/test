@@ -202,7 +202,7 @@ function App() {
                 <CardContent className="text-center space-y-4">
                   <p className="text-gray-600">Can't attend in person? Join us via Zoom!</p>
                   <a
-                    href="https://zoom.us/j/MEETING_ID?pwd=PASSCODE" 
+                    href={`https://zoom.us/j/${import.meta.env.VITE_ZOOM_MEETING_ID}?pwd=${import.meta.env.VITE_ZOOM_PASSCODE}`} 
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -211,8 +211,8 @@ function App() {
                     </Button>
                   </a>
                   <div className="text-sm text-gray-500 space-y-1">
-                    <p>Meeting ID: <span className="font-medium">MEETING_ID</span></p>
-                    <p>Passcode: <span className="font-medium">PASSCODE</span></p>
+                    <p>Meeting ID: <span className="font-medium">{import.meta.env.VITE_ZOOM_MEETING_ID}</span></p>
+                    <p className="text-red-500">Passcode: <span className="font-medium">Contact the host for passcode</span></p>
                   </div>
                 </CardContent>
               </Card>
