@@ -159,6 +159,12 @@ function App() {
                     <Clock className="w-5 h-5" />
                     12:00 PM Central US Time
                   </p>
+                  <div className="text-center text-gray-500 text-sm my-2">or</div>
+                  <p className="text-lg font-semibold text-gray-800">Sunday, October 26, 2025</p>
+                  <p className="text-lg text-gray-600 flex items-center gap-2">
+                    <Clock className="w-5 h-5" />
+                    00:00 AM WIB (Midnight)
+                  </p>
                 </CardContent>
               </Card>
 
@@ -507,7 +513,7 @@ function App() {
                 We can't wait to celebrate with you!
               </p>
               <p className="mt-4 text-sm">
-                Farid & Jannah
+                Farid & Irfi
               </p>
             </div>
           </div>
