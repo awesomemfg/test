@@ -19,8 +19,8 @@ function App() {
     seconds: 0
   })
 
-  // Wedding date: Saturday, October 25, 2025, 12:00 PM Central Time
-  const weddingDate = new Date('2025-10-25T12:00:00-05:00')
+  // Wedding date: Saturday, October 25, 2025, 4:00 PM Central Time
+  const weddingDate = new Date('2025-10-25T16:00:00-05:00')
 
   // Load guest name from URL parameter
   useEffect(() => {
@@ -130,6 +130,16 @@ function App() {
               <h1 className="text-4xl md:text-6xl font-serif text-gray-800 tracking-tight">
                 The Wedding Of
               </h1>
+              {/* Photo placeholder above Bride & Groom names */}
+              <div className="max-w-2xl mx-auto">
+                <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 h-48 md:h-64 flex items-center justify-center">
+                  <div className="text-center p-6">
+                    <Heart className="w-12 h-12 mx-auto mb-3 text-blue-500" />
+                    <p className="text-gray-700 font-medium">Photo Placeholder</p>
+                    <p className="text-sm text-gray-500 mt-1">Replace with your photo</p>
+                  </div>
+                </div>
+              </div>
               
               {/* Bride and Groom Names */}
               <div className="space-y-8 max-w-4xl mx-auto">
@@ -138,7 +148,7 @@ function App() {
                     Muhamad Farid Geonova, S.T.
                   </h2>
                   <p className="text-lg md:text-xl text-gray-600 font-light">
-                    bin (Alm.) Yunitan Teguh Santosa
+                    the only son of (Alm.) Yunitan Teguh Santosa and Ibu Irna Zuraidah
                   </p>
                 </div>
 
@@ -149,10 +159,45 @@ function App() {
                     Irfianti Nur Jannah, S.T., M.M.
                   </h2>
                   <p className="text-lg md:text-xl text-gray-600 font-light">
-                    binti Bapak H. Akbp. Ansori, A. Md., S.H.
+                    the first daughter of Bapak H. Akbp. Ansori, A. Md., S.H. and Ibu Dra. Ruyati
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* Emphasized date and countdown moved up below names */}
+            <div className="max-w-4xl mx-auto mt-6 space-y-6">
+              {/* Emphasized date 251025 */}
+              <div className="text-center">
+                <div className="text-5xl md:text-7xl font-extrabold tracking-[0.25em] text-blue-700 select-none">
+                  251025
+                </div>
+                <div className="mt-2 text-sm text-gray-500">25 • 10 • 25</div>
+              </div>
+              {/* Countdown Timer */}
+              <Card className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0 shadow-2xl">
+                <CardContent className="p-8">
+                  <h3 className="text-2xl md:text-3xl font-serif mb-6">Counting Down To Our Special Day</h3>
+                  <div className="grid grid-cols-4 gap-4 md:gap-8">
+                    <div className="text-center">
+                      <div className="text-4xl md:text-6xl font-bold">{countdown.days}</div>
+                      <div className="text-sm md:text-base mt-2 opacity-90">Days</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-4xl md:text-6xl font-bold">{countdown.hours}</div>
+                      <div className="text-sm md:text-base mt-2 opacity-90">Hours</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-4xl md:text-6xl font-bold">{countdown.minutes}</div>
+                      <div className="text-sm md:text-base mt-2 opacity-90">Minutes</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-4xl md:text-6xl font-bold">{countdown.seconds}</div>
+                      <div className="text-sm md:text-base mt-2 opacity-90">Seconds</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Date and Location */}
@@ -168,13 +213,13 @@ function App() {
                   <p className="text-xl font-semibold text-gray-800">Saturday, October 25, 2025</p>
                   <p className="text-lg text-gray-600 flex items-center gap-2">
                     <Clock className="w-5 h-5" />
-                    12:00 PM Central US Time
+                    4:00 PM Central US Time
                   </p>
                   <div className="text-center text-gray-500 text-sm my-2">or</div>
                   <p className="text-lg font-semibold text-gray-800">Sunday, October 26, 2025</p>
                   <p className="text-lg text-gray-600 flex items-center gap-2">
                     <Clock className="w-5 h-5" />
-                    00:00 AM WIB (Midnight)
+                    04:00 AM WIB (Morning)
                   </p>
                 </CardContent>
               </Card>
@@ -235,32 +280,7 @@ function App() {
               </Card>
             </div>
 
-            {/* Countdown Timer */}
-            <div className="max-w-4xl mx-auto mt-12">
-              <Card className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-0 shadow-2xl">
-                <CardContent className="p-8">
-                  <h3 className="text-2xl md:text-3xl font-serif mb-6">Counting Down To Our Special Day</h3>
-                  <div className="grid grid-cols-4 gap-4 md:gap-8">
-                    <div className="text-center">
-                      <div className="text-4xl md:text-6xl font-bold">{countdown.days}</div>
-                      <div className="text-sm md:text-base mt-2 opacity-90">Days</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-4xl md:text-6xl font-bold">{countdown.hours}</div>
-                      <div className="text-sm md:text-base mt-2 opacity-90">Hours</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-4xl md:text-6xl font-bold">{countdown.minutes}</div>
-                      <div className="text-sm md:text-base mt-2 opacity-90">Minutes</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-4xl md:text-6xl font-bold">{countdown.seconds}</div>
-                      <div className="text-sm md:text-base mt-2 opacity-90">Seconds</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Countdown moved above, under names */}
 
             {/* Quranic Verse */}
             <div className="max-w-3xl mx-auto mt-16">
@@ -274,6 +294,20 @@ function App() {
                     <p className="text-lg md:text-2xl text-gray-700 leading-relaxed italic font-serif">
                       "And of His signs is that He created for you from yourselves mates that you may find tranquility in them; and He placed between you affection and mercy. Indeed in that are signs for a people who give thought."
                     </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Hadith below Qur'an verse */}
+            <div className="max-w-3xl mx-auto mt-8">
+              <Card className="bg-white/95 backdrop-blur-sm border-blue-200 shadow-xl">
+                <CardContent className="p-8 md:p-12">
+                  <div className="text-center space-y-4">
+                    <p className="text-lg md:text-2xl text-gray-700 leading-relaxed italic font-serif">
+                      It was narrated from Aishah that: the Messenger of Allah said: “Marriage is part of my sunnah, and whoever does not follow my sunnah has nothing to do with me. Get married, for I will boast of your great numbers before the nations. Whoever has the means, let him get married, and whoever does not, then he should fast for it will diminish his desire.”
+                    </p>
+                    <p className="text-sm text-gray-500">(Sunan Ibn Majah 1846)</p>
                   </div>
                 </CardContent>
               </Card>
@@ -358,79 +392,7 @@ function App() {
               </div>
             </div>
 
-            {/* Bank Donation Section */}
-            <div className="max-w-4xl mx-auto mt-16">
-              <h2 className="text-3xl md:text-4xl font-serif text-gray-800 text-center mb-8">Wedding Gift</h2>
-              <Card className="bg-white/95 backdrop-blur-sm border-blue-200 shadow-xl">
-                <CardContent className="p-8 md:p-12">
-                  <div className="text-center mb-8">
-                    <p className="text-lg text-gray-700 mb-4">
-                      Your presence at our wedding is the greatest gift of all. However, if you wish to honor us with a gift, 
-                      we would be grateful for a contribution towards our future together.
-                    </p>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-8">
-                    {/* Bank Account Details */}
-                    <div className="space-y-4">
-                      <h3 className="text-xl font-semibold text-blue-700 mb-4">Bank Transfer</h3>
-                      <div className="bg-blue-50 p-6 rounded-lg space-y-3">
-                        <div>
-                          <p className="text-sm text-gray-600">Bank Name</p>
-                          <p className="text-lg font-semibold text-gray-800">Bank Rankyat Indonesia</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Account Name</p>
-                          <p className="text-lg font-semibold text-gray-800">Muhamad Farid Geonova</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Account Number</p>
-                          <p className="text-lg font-semibold text-gray-800">035601076763504</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* QR Code */}
-                    <div className="space-y-4">
-                      <h3 className="text-xl font-semibold text-blue-700 mb-4">Scan QR Code</h3>
-                      <div className="flex justify-center">
-                        <div className="bg-blue-50 p-4 rounded-lg flex flex-col items-center">
-                          <img
-                            src="/qr-bank.png"
-                            alt="Bank transfer QR placeholder"
-                            className="w-32 h-32 rounded-lg border border-blue-100 object-contain mb-2 bg-white"
-                          />
-                          <p className="text-sm font-medium text-gray-700">Bank Transfer</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Zelle Section - Centered */}
-                  <div className="flex justify-center mt-8">
-                    <div className="w-full max-w-md">
-                      <h3 className="text-xl font-semibold text-blue-700 mb-4 text-center">Zelle</h3>
-                      <div className="bg-blue-50 p-6 rounded-lg space-y-3">
-                        <div>
-                          <p className="text-sm text-gray-600">Zelle Email</p>
-                          <p className="text-lg font-semibold text-gray-800">mgeono1@lsu.edu</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Account Name</p>
-                          <p className="text-lg font-semibold text-gray-800">Muhamad Farid Geonova</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="text-center mt-8">
-                    <p className="text-sm text-gray-600 italic">
-                      Thank you for your love and generosity! 💙
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Wedding Gift section removed as requested */}
 
             {/* Wishes Section */}
             <div className="max-w-4xl mx-auto mt-16 space-y-8">
