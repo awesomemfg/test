@@ -56,18 +56,23 @@ export const supabase = {
                   message: row.message || '',
                   created_at: serverTimestamp()
                 }
-                
                 console.log('Attempting to add document:', docData)
                 const docRef = await addDoc(wishesRef, docData)
                 console.log('Document added successfully with ID:', docRef.id)
-                
-                insertedData.push({
-                  id: docRef.id,
-                  ...docData,
-                  created_at: new Date().toISOString()
-                })
+                // Fetch the inserted doc to get the real timestamp
+                const insertedSnap = await getDocs(query(wishesRef, orderBy('created_at', 'desc')))
+                const insertedDoc = insertedSnap.docs.find(doc => doc.id === docRef.id)
+                let insertedWish = { id: docRef.id, ...docData, created_at: new Date().toISOString() }
+                if (insertedDoc) {
+                  const d = insertedDoc.data()
+                  insertedWish = {
+                    id: docRef.id,
+                    ...d,
+                    created_at: d.created_at?.toDate?.() ? d.created_at.toDate().toISOString() : new Date().toISOString()
+                  }
+                }
+                insertedData.push(insertedWish)
               }
-              
               return { data: insertedData, error: null }
             } catch (error) {
               console.error('Firebase insert error:', error)

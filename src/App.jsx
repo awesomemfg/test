@@ -149,7 +149,7 @@ function App() {
               <div className="space-y-8 max-w-4xl mx-auto">
                 {/* Photo above Farid */}
                 <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 aspect-square max-w-xs mx-auto flex items-center justify-center">
-                  <img src="/photos/farid.jpg" alt="Farid" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo1.svg'; }} />
+                  <img src="/photos/farid.png" alt="Farid" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo1.svg'; }} />
                 </div>
                 <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-blue-100">
                   <h2 className="text-3xl md:text-5xl font-serif text-blue-700 mb-4 leading-relaxed">
@@ -164,7 +164,7 @@ function App() {
 
                 {/* Photo above Irfi */}
                 <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 aspect-square max-w-xs mx-auto flex items-center justify-center">
-                  <img src="/photos/irfi.jpg" alt="Irfi" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo2.svg'; }} />
+                  <img src="/photos/irfi.png" alt="Irfi" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo2.svg'; }} />
                 </div>
                 <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-blue-100">
                   <h2 className="text-3xl md:text-5xl font-serif text-blue-700 mb-4 leading-relaxed">
@@ -325,60 +325,6 @@ function App() {
               </Card>
             </div>
 
-            {/* Photo Gallery */}
-            <div className="max-w-6xl mx-auto mt-16">
-              <h2 className="text-3xl md:text-4xl font-serif text-gray-800 text-center mb-8">Our Moments</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Photo 1 */}
-                <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gray-100">
-                    <img src="/photos/photo1.svg" alt="Our moment 1" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-
-                {/* Photo 2 */}
-                <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gray-100">
-                    <img src="/photos/photo2.svg" alt="Our moment 2" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-
-                {/* Photo 3 */}
-                <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gray-100">
-                    <img src="/photos/photo3.svg" alt="Our moment 3" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-
-                {/* Photo 4 */}
-                <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gray-100">
-                    <img src="/photos/photo4.svg" alt="Our moment 4" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-
-                {/* Photo 5 */}
-                <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gray-100">
-                    <img src="/photos/photo5.svg" alt="Our moment 5" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-
-                {/* Photo 6 */}
-                <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gray-100">
-                    <img src="/photos/photo6.svg" alt="Our moment 6" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-              </div>
-            </div>
 
             {/* Wedding Gift section removed as requested */}
 
