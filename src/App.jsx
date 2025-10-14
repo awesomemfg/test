@@ -76,6 +76,15 @@ function App() {
       try {
         console.log('Submitting wish:', { name: wishName, message: wishMessage })
         
+        // Optimistically update UI so users see their message immediately
+        const optimistic = {
+          id: `tmp-${Date.now()}`,
+          name: wishName,
+          message: wishMessage,
+          created_at: new Date().toISOString(),
+        }
+        setWishes((prev) => [optimistic, ...prev])
+
         const { data, error } = await supabase
           .from('wishes')
           .insert([
@@ -86,6 +95,8 @@ function App() {
         if (error) {
           console.error('Error submitting wish:', error)
           alert(`Failed to submit wish: ${error}`)
+          // Rollback optimistic update
+          setWishes((prev) => prev.filter((w) => w.id !== optimistic.id))
         } else {
           console.log('Wish submitted successfully:', data)
           // Refresh wishes list
@@ -97,6 +108,8 @@ function App() {
       } catch (error) {
         console.error('Unexpected error:', error)
         alert('An unexpected error occurred. Please check the console for details.')
+        // Rollback optimistic update if any error thrown
+        setWishes((prev) => prev.filter((w) => !String(w.id).startsWith('tmp-')))
       }
     } else {
       alert('Please fill in both your name and message.')
@@ -135,11 +148,8 @@ function App() {
               {/* Bride and Groom Names */}
               <div className="space-y-8 max-w-4xl mx-auto">
                 {/* Photo above Farid */}
-                <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 h-40 md:h-56 flex items-center justify-center">
-                  <div className="text-center p-6">
-                    <Heart className="w-12 h-12 mx-auto mb-3 text-blue-500" />
-                    <img src="/photos/farid.jpg" alt="Farid" className="h-full w-full object-cover"/>
-                  </div>
+                <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 aspect-square max-w-xs mx-auto flex items-center justify-center">
+                  <img src="/photos/farid.jpg" alt="Farid" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo1.svg'; }} />
                 </div>
                 <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-blue-100">
                   <h2 className="text-3xl md:text-5xl font-serif text-blue-700 mb-4 leading-relaxed">
@@ -153,11 +163,8 @@ function App() {
                 <div className="text-5xl text-blue-400 font-light">&</div>
 
                 {/* Photo above Irfi */}
-                <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 h-40 md:h-56 flex items-center justify-center">
-                  <div className="text-center p-6">
-                    <Heart className="w-12 h-12 mx-auto mb-3 text-blue-500" />
-                    <img src="/photos/irfi.jpg" alt="Irfi" className="h-full w-full object-cover"/>
-                  </div>
+                <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 aspect-square max-w-xs mx-auto flex items-center justify-center">
+                  <img src="/photos/irfi.jpg" alt="Irfi" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo2.svg'; }} />
                 </div>
                 <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-blue-100">
                   <h2 className="text-3xl md:text-5xl font-serif text-blue-700 mb-4 leading-relaxed">
@@ -325,72 +332,48 @@ function App() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Photo 1 */}
                 <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gradient-to-br from-blue-200 to-cyan-200 flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <Heart className="w-16 h-16 mx-auto mb-4 text-blue-400" />
-                      <p className="text-gray-600 font-medium">Photo 1</p>
-                      <p className="text-sm text-gray-500 mt-2">Replace with your photo</p>
-                    </div>
+                  <div className="aspect-square bg-gray-100">
+                    <img src="/photos/photo1.svg" alt="Our moment 1" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
 
                 {/* Photo 2 */}
                 <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gradient-to-br from-cyan-200 to-sky-200 flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <Heart className="w-16 h-16 mx-auto mb-4 text-cyan-400" />
-                      <p className="text-gray-600 font-medium">Photo 2</p>
-                      <p className="text-sm text-gray-500 mt-2">Replace with your photo</p>
-                    </div>
+                  <div className="aspect-square bg-gray-100">
+                    <img src="/photos/photo2.svg" alt="Our moment 2" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
 
                 {/* Photo 3 */}
                 <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gradient-to-br from-sky-200 to-blue-200 flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <Heart className="w-16 h-16 mx-auto mb-4 text-sky-400" />
-                      <p className="text-gray-600 font-medium">Photo 3</p>
-                      <p className="text-sm text-gray-500 mt-2">Replace with your photo</p>
-                    </div>
+                  <div className="aspect-square bg-gray-100">
+                    <img src="/photos/photo3.svg" alt="Our moment 3" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
 
                 {/* Photo 4 */}
                 <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gradient-to-br from-blue-200 to-indigo-200 flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <Heart className="w-16 h-16 mx-auto mb-4 text-indigo-400" />
-                      <p className="text-gray-600 font-medium">Photo 4</p>
-                      <p className="text-sm text-gray-500 mt-2">Replace with your photo</p>
-                    </div>
+                  <div className="aspect-square bg-gray-100">
+                    <img src="/photos/photo4.svg" alt="Our moment 4" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
 
                 {/* Photo 5 */}
                 <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gradient-to-br from-cyan-200 to-blue-200 flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <Heart className="w-16 h-16 mx-auto mb-4 text-blue-400" />
-                      <p className="text-gray-600 font-medium">Photo 5</p>
-                      <p className="text-sm text-gray-500 mt-2">Replace with your photo</p>
-                    </div>
+                  <div className="aspect-square bg-gray-100">
+                    <img src="/photos/photo5.svg" alt="Our moment 5" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
 
                 {/* Photo 6 */}
                 <div className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div className="aspect-square bg-gradient-to-br from-sky-200 to-cyan-200 flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <Heart className="w-16 h-16 mx-auto mb-4 text-cyan-400" />
-                      <p className="text-gray-600 font-medium">Photo 6</p>
-                      <p className="text-sm text-gray-500 mt-2">Replace with your photo</p>
-                    </div>
+                  <div className="aspect-square bg-gray-100">
+                    <img src="/photos/photo6.svg" alt="Our moment 6" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
@@ -464,16 +447,16 @@ function App() {
                         <CardContent className="p-6">
                           <div className="flex items-start gap-4">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                              {wish.name.charAt(0).toUpperCase()}
+                              {(wish?.name?.charAt?.(0) || '?').toUpperCase()}
                             </div>
                             <div className="flex-1">
                               <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-semibold text-gray-800">{wish.name}</h4>
+                                <h4 className="font-semibold text-gray-800">{wish?.name || 'Anonymous'}</h4>
                                 <span className="text-xs text-gray-500">
-                                  {new Date(wish.created_at).toLocaleDateString()}
+                                  {wish?.created_at ? new Date(wish.created_at).toLocaleDateString() : ''}
                                 </span>
                               </div>
-                              <p className="text-gray-700 leading-relaxed">{wish.message}</p>
+                              <p className="text-gray-700 leading-relaxed">{wish?.message || ''}</p>
                             </div>
                           </div>
                         </CardContent>
