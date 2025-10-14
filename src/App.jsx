@@ -36,6 +36,39 @@ function App() {
     fetchWishes()
   }, [])
 
+  // Autoplay Quran recitation
+  useEffect(() => {
+    const audio = new Audio('https://podcasts.qurancentral.com/noreen-muhammad-siddique-al-duri-via-abu-amr/055-ar-rahman.mp3')
+    audio.loop = true
+    audio.volume = 0.3 // Set volume to 30%
+    
+    // Try to play with user interaction
+    const playAudio = () => {
+      audio.play().catch(err => {
+        console.log('Audio autoplay prevented:', err)
+      })
+    }
+    
+    // Attempt autoplay
+    playAudio()
+    
+    // Also try to play on first user interaction
+    const handleInteraction = () => {
+      playAudio()
+      document.removeEventListener('click', handleInteraction)
+      document.removeEventListener('touchstart', handleInteraction)
+    }
+    
+    document.addEventListener('click', handleInteraction)
+    document.addEventListener('touchstart', handleInteraction)
+    
+    return () => {
+      audio.pause()
+      document.removeEventListener('click', handleInteraction)
+      document.removeEventListener('touchstart', handleInteraction)
+    }
+  }, [])
+
   const fetchWishes = async () => {
     const { data, error } = await supabase
       .from('wishes')
@@ -75,15 +108,6 @@ function App() {
     if (wishName.trim() && wishMessage.trim()) {
       try {
         console.log('Submitting wish:', { name: wishName, message: wishMessage })
-        
-        // Optimistically update UI so users see their message immediately
-        const optimistic = {
-          id: `tmp-${Date.now()}`,
-          name: wishName,
-          message: wishMessage,
-          created_at: new Date().toISOString(),
-        }
-        setWishes((prev) => [optimistic, ...prev])
 
         const { data, error } = await supabase
           .from('wishes')
@@ -95,21 +119,18 @@ function App() {
         if (error) {
           console.error('Error submitting wish:', error)
           alert(`Failed to submit wish: ${error}`)
-          // Rollback optimistic update
-          setWishes((prev) => prev.filter((w) => w.id !== optimistic.id))
         } else {
           console.log('Wish submitted successfully:', data)
-          // Refresh wishes list
-          fetchWishes()
+          // Clear form
           setWishName('')
           setWishMessage('')
+          // Refresh wishes list to show the new wish
+          await fetchWishes()
           alert('Thank you! Your wish has been submitted successfully.')
         }
       } catch (error) {
         console.error('Unexpected error:', error)
         alert('An unexpected error occurred. Please check the console for details.')
-        // Rollback optimistic update if any error thrown
-        setWishes((prev) => prev.filter((w) => !String(w.id).startsWith('tmp-')))
       }
     } else {
       alert('Please fill in both your name and message.')
@@ -148,13 +169,9 @@ function App() {
               {/* Bride and Groom Names */}
               <div className="space-y-8 max-w-4xl mx-auto">
                 {/* Photo above Farid */}
-                <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 aspect-square max-w-xs mx-auto flex items-center justify-center">
-                  <img src="/photos/farid.png" alt="Farid" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo1.svg'; }} />
+                <div className="relative overflow-hidden rounded-2xl shadow-xl flex items-center justify-center p-2">
+                  <img src="/photos/farid.png" alt="Farid" style={{maxWidth: '100%', maxHeight: '260px', height: 'auto', width: 'auto', display: 'block'}} onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo1.svg'; }} />
                 </div>
-                  {/* Photo above Farid */}
-                  <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 flex items-center justify-center p-2">
-                    <img src="/photos/farid.png" alt="Farid" style={{maxWidth: '100%', maxHeight: '260px', height: 'auto', width: 'auto', display: 'block'}} onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo1.svg'; }} />
-                  </div>
                 <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-blue-100">
                   <h2 className="text-3xl md:text-5xl font-serif text-blue-700 mb-4 leading-relaxed">
                     Muhamad Farid Geonova, S.T.
@@ -167,13 +184,9 @@ function App() {
                 <div className="text-5xl text-blue-400 font-light">&</div>
 
                 {/* Photo above Irfi */}
-                <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 aspect-square max-w-xs mx-auto flex items-center justify-center">
-                  <img src="/photos/irfi.png" alt="Irfi" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo2.svg'; }} />
+                <div className="relative overflow-hidden rounded-2xl shadow-xl flex items-center justify-center p-2">
+                  <img src="/photos/irfi.png" alt="Irfi" style={{maxWidth: '100%', maxHeight: '260px', height: 'auto', width: 'auto', display: 'block'}} onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo2.svg'; }} />
                 </div>
-                  {/* Photo above Irfi */}
-                  <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 flex items-center justify-center p-2">
-                    <img src="/photos/irfi.png" alt="Irfi" style={{maxWidth: '100%', maxHeight: '260px', height: 'auto', width: 'auto', display: 'block'}} onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo2.svg'; }} />
-                  </div>
                 <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-blue-100">
                   <h2 className="text-3xl md:text-5xl font-serif text-blue-700 mb-4 leading-relaxed">
                     Irfianti Nur Jannah, S.T., M.M.
