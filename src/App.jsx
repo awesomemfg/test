@@ -112,8 +112,8 @@ function App() {
   const audioPlayerRef = { current: null }
   const [, forceRerender] = useState(0)
   const [audioPlaying, setAudioPlaying] = useState(false)
-  const [audioMuted, setAudioMuted] = useState(true)
-  
+  const [audioMuted, setAudioMuted] = useState(false)
+
   const togglePlayPause = async () => {
     try {
       const el = audioPlayerRef.current || document.getElementById('recitation')
@@ -126,17 +126,6 @@ function App() {
       setAudioPlaying(!el.paused)
     } catch (e) {
       console.error('togglePlayPause error', e)
-    }
-  }
-
-  const toggleMute = () => {
-    try {
-      const el = audioPlayerRef.current || document.getElementById('recitation')
-      if (!el) return
-      el.muted = !el.muted
-      setAudioMuted(!!el.muted)
-    } catch (e) {
-      console.error('toggleMute error', e)
     }
   }
   const [showAudioPrompt, setShowAudioPrompt] = useState(false)
@@ -192,12 +181,12 @@ function App() {
       elem.addEventListener('pause', onPause)
       elem.addEventListener('volumechange', onVolume)
 
+      // If autoplay worked (muted or unmuted), attempt to unmute immediately (best-effort).
       if (ok) {
+        try { elem.muted = false; elem.volume = 0.3 } catch (e) { console.log('unmute attempt failed', e) }
         setAudioBlocked(false)
-        setShowAudioPrompt(false)
       } else {
         setAudioBlocked(true)
-        setShowAudioPrompt(true)
       }
       setAudioPlaying(!elem.paused)
       setAudioMuted(!!elem.muted)
@@ -303,17 +292,7 @@ function App() {
             {/* Invitation Header */}
             <div className="space-y-4">
               <Heart className="w-16 h-16 mx-auto text-blue-500 animate-pulse" />
-              {/* Audio indicator and controls */}
-              <div className="flex items-center justify-center gap-4 mt-2">
-                <div className="text-sm text-gray-600">Recitation:</div>
-                <button onClick={togglePlayPause} className="px-3 py-1 bg-white/90 rounded shadow-sm border">
-                  {audioPlaying ? 'Pause' : 'Play'}
-                </button>
-                <button onClick={toggleMute} className="px-3 py-1 bg-white/90 rounded shadow-sm border">
-                  {audioMuted ? 'Unmute' : 'Mute'}
-                </button>
-                <div className="text-sm text-gray-500">{audioPlaying ? 'Playing' : 'Stopped'}</div>
-              </div>
+              {/* audio controls removed from header - only bottom-right button remains */}
               {guestName && (
                 <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6 max-w-md mx-auto border-2 border-blue-200">
                   <p className="text-3xl md:text-4xl font-serif text-blue-600 font-semibold">
