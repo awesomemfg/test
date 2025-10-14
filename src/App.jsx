@@ -31,6 +31,20 @@ function App() {
     }
   }, [])
 
+  // Fetch wishes function
+  const fetchWishes = async () => {
+    const { data, error } = await supabase
+      .from('wishes')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (error) {
+      console.error('Error fetching wishes:', error)
+    } else {
+      setWishes(data || [])
+    }
+  }
+
   // Load wishes from Supabase database
   useEffect(() => {
     fetchWishes()
@@ -69,19 +83,6 @@ function App() {
     }
   }, [])
 
-  const fetchWishes = async () => {
-    const { data, error } = await supabase
-      .from('wishes')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    if (error) {
-      console.error('Error fetching wishes:', error)
-    } else {
-      setWishes(data || [])
-    }
-  }
-
   // Countdown timer
   useEffect(() => {
     const timer = setInterval(() => {
@@ -118,7 +119,7 @@ function App() {
         
         if (error) {
           console.error('Error submitting wish:', error)
-          alert(`Failed to submit wish: ${error}`)
+          alert(`Failed to submit wish: ${typeof error === 'string' ? error : error.message || 'Unknown error'}`)
         } else {
           console.log('Wish submitted successfully:', data)
           // Clear form
