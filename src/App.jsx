@@ -111,67 +111,132 @@ function App() {
   const [audioBlocked, setAudioBlocked] = useState(false)
   const audioPlayerRef = { current: null }
   const [, forceRerender] = useState(0)
+  const [audioPlaying, setAudioPlaying] = useState(false)
+  const [audioMuted, setAudioMuted] = useState(true)
+  
+  const togglePlayPause = async () => {
+    try {
+      const el = audioPlayerRef.current || document.getElementById('recitation')
+      if (!el) return
+      if (el.paused) {
+        await el.play().catch(e => console.error('Play failed', e))
+      } else {
+        el.pause()
+      }
+      setAudioPlaying(!el.paused)
+    } catch (e) {
+      console.error('togglePlayPause error', e)
+    }
+  }
+
+  const toggleMute = () => {
+    try {
+      const el = audioPlayerRef.current || document.getElementById('recitation')
+      if (!el) return
+      el.muted = !el.muted
+      setAudioMuted(!!el.muted)
+    } catch (e) {
+      console.error('toggleMute error', e)
+    }
+  }
+  const [showAudioPrompt, setShowAudioPrompt] = useState(false)
 
   useEffect(() => {
-    let audio = null
     let mounted = true
     const remote = 'https://podcasts.qurancentral.com/noreen-muhammad-siddique-al-duri-via-abu-amr/055-ar-rahman.mp3'
 
-    const setupAudio = async (src) => {
-      audio = new Audio(src)
-      audio.loop = true
-      // Try a muted autoplay first
-      audio.volume = 0
-      audio.muted = true
+    const tryPlayElement = async (elem) => {
+      if (!elem) return false
+      // First try unmuted play
       try {
-        await audio.play()
-        // unmute
-        audio.muted = false
-        audio.volume = 0.3
-        audioPlayerRef.current = audio
-        if (!mounted) return
-        setAudioBlocked(false)
-        forceRerender(r => r + 1)
+        elem.muted = false
+        elem.volume = 0.3
+        await elem.play()
+        return true
       } catch (err) {
-        console.log('Muted autoplay prevented or failed:', err)
-        // store audio object so we can play on user interaction
-        audio.muted = true
-        audio.volume = 0.3
-        audioPlayerRef.current = audio
-        if (!mounted) return
-        setAudioBlocked(true)
-        forceRerender(r => r + 1)
+        // Try muted autoplay then unmute
+        try {
+          elem.muted = true
+          elem.volume = 0.3
+          await elem.play()
+          // attempt to unmute - may remain muted by browser
+          try { elem.muted = false } catch (e) {}
+          return true
+        } catch (err2) {
+          console.log('Autoplay failed (unmuted & muted attempts):', err, err2)
+          return false
+        }
       }
     }
 
-    // Prefer local file if present
-    fetch('/recitation.mp3', { method: 'HEAD' }).then(res => {
-      if (res.ok) {
-        setupAudio('/recitation.mp3')
+    const setup = async () => {
+      const elem = document.getElementById('recitation')
+      if (!elem) return
+
+      // prefer local file if present
+      try {
+        const res = await fetch('/recitation.mp3', { method: 'HEAD' })
+        elem.src = res.ok ? '/recitation.mp3' : remote
+      } catch (e) {
+        elem.src = remote
+      }
+
+      const ok = await tryPlayElement(elem)
+      audioPlayerRef.current = elem
+
+      // attach listeners so UI stays in sync
+      const onPlay = () => { setAudioPlaying(true) }
+      const onPause = () => { setAudioPlaying(false) }
+      const onVolume = () => { setAudioMuted(!!elem.muted) }
+      elem.addEventListener('play', onPlay)
+      elem.addEventListener('pause', onPause)
+      elem.addEventListener('volumechange', onVolume)
+
+      if (ok) {
+        setAudioBlocked(false)
+        setShowAudioPrompt(false)
       } else {
-        setupAudio(remote)
+        setAudioBlocked(true)
+        setShowAudioPrompt(true)
       }
-    }).catch(() => setupAudio(remote))
-
-    const handleInteraction = () => {
-      const p = audioPlayerRef.current
-      if (p && p.paused) {
-        p.play().catch(e => console.log('Play on interaction failed', e))
-      }
-      document.removeEventListener('click', handleInteraction)
-      document.removeEventListener('touchstart', handleInteraction)
+      setAudioPlaying(!elem.paused)
+      setAudioMuted(!!elem.muted)
+      if (mounted) forceRerender(r => r + 1)
     }
 
-    document.addEventListener('click', handleInteraction)
-    document.addEventListener('touchstart', handleInteraction)
+    setup()
+
+    const onInteraction = async () => {
+      const el = audioPlayerRef.current || document.getElementById('recitation')
+      if (!el) return
+      try {
+        await el.play()
+        el.muted = false
+        setAudioBlocked(false)
+        setShowAudioPrompt(false)
+        forceRerender(r => r + 1)
+      } catch (e) {
+        console.log('Interaction play failed', e)
+      }
+      document.removeEventListener('click', onInteraction)
+      document.removeEventListener('touchstart', onInteraction)
+    }
+
+    document.addEventListener('click', onInteraction)
+    document.addEventListener('touchstart', onInteraction)
 
     return () => {
       mounted = false
-      if (audioPlayerRef.current) {
-        try { audioPlayerRef.current.pause() } catch (e) {}
-      }
-      document.removeEventListener('click', handleInteraction)
-      document.removeEventListener('touchstart', handleInteraction)
+      try { const el = audioPlayerRef.current || document.getElementById('recitation'); if (el) {
+        el.pause()
+        el.removeEventListener('play', () => {})
+        el.removeEventListener('pause', () => {})
+        el.removeEventListener('volumechange', () => {})
+      }} catch (e) {}
+      document.removeEventListener('click', onInteraction)
+      document.removeEventListener('touchstart', onInteraction)
+      setAudioPlaying(false)
+      setAudioMuted(true)
     }
   }, [])
 
@@ -238,6 +303,17 @@ function App() {
             {/* Invitation Header */}
             <div className="space-y-4">
               <Heart className="w-16 h-16 mx-auto text-blue-500 animate-pulse" />
+              {/* Audio indicator and controls */}
+              <div className="flex items-center justify-center gap-4 mt-2">
+                <div className="text-sm text-gray-600">Recitation:</div>
+                <button onClick={togglePlayPause} className="px-3 py-1 bg-white/90 rounded shadow-sm border">
+                  {audioPlaying ? 'Pause' : 'Play'}
+                </button>
+                <button onClick={toggleMute} className="px-3 py-1 bg-white/90 rounded shadow-sm border">
+                  {audioMuted ? 'Unmute' : 'Mute'}
+                </button>
+                <div className="text-sm text-gray-500">{audioPlaying ? 'Playing' : 'Stopped'}</div>
+              </div>
               {guestName && (
                 <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6 max-w-md mx-auto border-2 border-blue-200">
                   <p className="text-3xl md:text-4xl font-serif text-blue-600 font-semibold">
@@ -540,7 +616,7 @@ function App() {
               <button
                 onClick={() => {
                   try {
-                    const p = audioPlayerRef.current
+                    const p = audioPlayerRef.current || document.getElementById('recitation')
                     if (!p) return
                     if (p.paused) {
                       p.play().catch(e => console.error('Play failed', e))
@@ -566,6 +642,12 @@ function App() {
                 )}
               </button>
             </div>
+
+            {showAudioPrompt && (
+              <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-white/95 p-4 rounded-xl shadow-lg border">
+                <p className="text-sm text-gray-700">Tap the play button to hear the recitation.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
