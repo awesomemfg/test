@@ -151,6 +151,10 @@ function App() {
                 <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 aspect-square max-w-xs mx-auto flex items-center justify-center">
                   <img src="/photos/farid.png" alt="Farid" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo1.svg'; }} />
                 </div>
+                  {/* Photo above Farid */}
+                  <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 flex items-center justify-center p-2">
+                    <img src="/photos/farid.png" alt="Farid" style={{maxWidth: '100%', maxHeight: '260px', height: 'auto', width: 'auto', display: 'block'}} onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo1.svg'; }} />
+                  </div>
                 <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-blue-100">
                   <h2 className="text-3xl md:text-5xl font-serif text-blue-700 mb-4 leading-relaxed">
                     Muhamad Farid Geonova, S.T.
@@ -166,6 +170,10 @@ function App() {
                 <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 aspect-square max-w-xs mx-auto flex items-center justify-center">
                   <img src="/photos/irfi.png" alt="Irfi" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo2.svg'; }} />
                 </div>
+                  {/* Photo above Irfi */}
+                  <div className="relative overflow-hidden rounded-2xl shadow-xl border border-blue-100 bg-gradient-to-br from-blue-200 to-cyan-200 flex items-center justify-center p-2">
+                    <img src="/photos/irfi.png" alt="Irfi" style={{maxWidth: '100%', maxHeight: '260px', height: 'auto', width: 'auto', display: 'block'}} onError={(e) => { e.target.onerror = null; e.target.src = '/photos/photo2.svg'; }} />
+                  </div>
                 <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-blue-100">
                   <h2 className="text-3xl md:text-5xl font-serif text-blue-700 mb-4 leading-relaxed">
                     Irfianti Nur Jannah, S.T., M.M.

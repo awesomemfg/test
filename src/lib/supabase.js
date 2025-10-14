@@ -27,13 +27,23 @@ export const supabase = {
               const q = query(wishesRef, orderBy(column, options.ascending ? 'asc' : 'desc'))
               const querySnapshot = await getDocs(q)
               
-              const data = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                created_at: doc.data().created_at?.toDate?.()?.toISOString() || new Date().toISOString()
-              }))
-              
-              return { data, error: null }
+              const data = querySnapshot.docs.map(doc => {
+                const d = doc.data();
+                let createdAt = d.created_at;
+                if (createdAt && typeof createdAt.toDate === 'function') {
+                  createdAt = createdAt.toDate().toISOString();
+                } else if (typeof createdAt === 'string') {
+                  // Already ISO string
+                } else {
+                  createdAt = new Date().toISOString();
+                }
+                return {
+                  id: doc.id,
+                  ...d,
+                  created_at: createdAt
+                };
+              });
+              return { data, error: null };
             } catch (error) {
               console.error('Firebase select error:', error)
               // Return empty array instead of failing completely
