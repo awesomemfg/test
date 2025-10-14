@@ -15,6 +15,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
 
+export { db }
+
 // Supabase-compatible API wrapper for Firebase
 export const supabase = {
   from(tableName) {

@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input.jsx'
 import { Textarea } from '@/components/ui/textarea.jsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Heart, MapPin, Calendar, Clock, Send } from 'lucide-react'
-import { supabase } from './lib/supabase'
+import { supabase, db } from './lib/supabase'
+import { collection, getDocs, orderBy, query } from 'firebase/firestore'
 import './App.css'
 
 function App() {
@@ -31,7 +32,7 @@ function App() {
     }
   }, [])
 
-  // Fetch wishes function
+  // Fetch wishes function using wrapper, with a Firestore fallback
   const fetchWishes = async (attempt = 1) => {
     try {
       const res = await supabase
@@ -39,22 +40,31 @@ function App() {
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (res.error) throw res.error
+      if (!res || res.error) {
+        throw res?.error || new Error('Supabase wrapper returned no data')
+      }
 
       let data = res.data || []
-
-      // If no data, try a fallback ordering or a second attempt
       if ((!data || data.length === 0) && attempt <= 2) {
-        console.log('No wishes returned, retrying fetch (attempt', attempt + 1, ')')
-        const res2 = await supabase.from('wishes').select('*')
-        if (!res2.error) data = res2.data || []
+        // Try direct Firestore read as fallback
+        const wishesRef = collection(db, 'wishes')
+        const q = query(wishesRef, orderBy('created_at', 'desc'))
+        const snap = await getDocs(q)
+        data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
       }
 
       setWishes(normalizeWishes(data || []))
     } catch (error) {
-      console.error('Error fetching wishes:', error)
-      if (attempt < 3) {
-        setTimeout(() => fetchWishes(attempt + 1), 500)
+      console.error('Error fetching wishes (wrapper), falling back to direct read:', error)
+      try {
+        const wishesRef = collection(db, 'wishes')
+        const q = query(wishesRef, orderBy('created_at', 'desc'))
+        const snap = await getDocs(q)
+        const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+        setWishes(normalizeWishes(data || []))
+      } catch (err2) {
+        console.error('Direct Firestore fallback failed:', err2)
+        if (attempt < 3) setTimeout(() => fetchWishes(attempt + 1), 500)
       }
     }
   }
@@ -99,7 +109,8 @@ function App() {
 
   // Autoplay Quran recitation
   const [audioBlocked, setAudioBlocked] = useState(false)
-  const [audioPlayer, setAudioPlayer] = useState(null)
+  const audioPlayerRef = { current: null }
+  const [, forceRerender] = useState(0)
 
   useEffect(() => {
     let audio = null
@@ -109,25 +120,27 @@ function App() {
     const setupAudio = async (src) => {
       audio = new Audio(src)
       audio.loop = true
-      // Try a muted autoplay first (some browsers allow muted autoplay)
+      // Try a muted autoplay first
       audio.volume = 0
       audio.muted = true
       try {
         await audio.play()
-        // If muted play succeeded, unmute and set desired volume
+        // unmute
         audio.muted = false
         audio.volume = 0.3
+        audioPlayerRef.current = audio
         if (!mounted) return
         setAudioBlocked(false)
-        setAudioPlayer(audio)
+        forceRerender(r => r + 1)
       } catch (err) {
         console.log('Muted autoplay prevented or failed:', err)
-        // Fallback: set audio object and mark blocked so UI shows control
-        if (!mounted) return
+        // store audio object so we can play on user interaction
         audio.muted = true
         audio.volume = 0.3
+        audioPlayerRef.current = audio
+        if (!mounted) return
         setAudioBlocked(true)
-        setAudioPlayer(audio)
+        forceRerender(r => r + 1)
       }
     }
 
@@ -141,8 +154,9 @@ function App() {
     }).catch(() => setupAudio(remote))
 
     const handleInteraction = () => {
-      if (audio && audio.paused) {
-        audio.play().catch(e => console.log('Play on interaction failed', e))
+      const p = audioPlayerRef.current
+      if (p && p.paused) {
+        p.play().catch(e => console.log('Play on interaction failed', e))
       }
       document.removeEventListener('click', handleInteraction)
       document.removeEventListener('touchstart', handleInteraction)
@@ -153,8 +167,8 @@ function App() {
 
     return () => {
       mounted = false
-      if (audio) {
-        try { audio.pause() } catch (e) {}
+      if (audioPlayerRef.current) {
+        try { audioPlayerRef.current.pause() } catch (e) {}
       }
       document.removeEventListener('click', handleInteraction)
       document.removeEventListener('touchstart', handleInteraction)
@@ -526,12 +540,14 @@ function App() {
               <button
                 onClick={() => {
                   try {
-                    if (!audioPlayer) return
-                    if (audioPlayer.paused) {
-                      audioPlayer.play()
+                    const p = audioPlayerRef.current
+                    if (!p) return
+                    if (p.paused) {
+                      p.play().catch(e => console.error('Play failed', e))
                     } else {
-                      audioPlayer.pause()
+                      p.pause()
                     }
+                    forceRerender(r => r + 1)
                   } catch (e) {
                     console.error('Audio control error', e)
                   }
@@ -539,9 +555,15 @@ function App() {
                 className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg border"
                 aria-label="Play or pause recitation"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-6.518-3.759A1 1 0 007 8.256v7.488a1 1 0 001.234.97l6.518-1.58A1 1 0 0016 13.888v-2.72a1 1 0 00-1.248-.0z" />
-                </svg>
+                {audioPlayerRef.current && !audioPlayerRef.current.paused ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M6 4h2v12H6V4zm6 0h2v12h-2V4z" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-6.518-3.759A1 1 0 007 8.256v7.488a1 1 0 001.234.97l6.518-1.58A1 1 0 0016 13.888v-2.72a1 1 0 00-1.248-.0z" />
+                  </svg>
+                )}
               </button>
             </div>
           </div>
