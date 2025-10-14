@@ -32,16 +32,30 @@ function App() {
   }, [])
 
   // Fetch wishes function
-  const fetchWishes = async () => {
-    const { data, error } = await supabase
-      .from('wishes')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    if (error) {
-      console.error('Error fetching wishes:', error)
-    } else {
+  const fetchWishes = async (attempt = 1) => {
+    try {
+      const res = await supabase
+        .from('wishes')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (res.error) throw res.error
+
+      let data = res.data || []
+
+      // If no data, try a fallback ordering or a second attempt
+      if ((!data || data.length === 0) && attempt <= 2) {
+        console.log('No wishes returned, retrying fetch (attempt', attempt + 1, ')')
+        const res2 = await supabase.from('wishes').select('*')
+        if (!res2.error) data = res2.data || []
+      }
+
       setWishes(normalizeWishes(data || []))
+    } catch (error) {
+      console.error('Error fetching wishes:', error)
+      if (attempt < 3) {
+        setTimeout(() => fetchWishes(attempt + 1), 500)
+      }
     }
   }
 
@@ -95,15 +109,23 @@ function App() {
     const setupAudio = async (src) => {
       audio = new Audio(src)
       audio.loop = true
-      audio.volume = 0.3
+      // Try a muted autoplay first (some browsers allow muted autoplay)
+      audio.volume = 0
+      audio.muted = true
       try {
         await audio.play()
+        // If muted play succeeded, unmute and set desired volume
+        audio.muted = false
+        audio.volume = 0.3
         if (!mounted) return
         setAudioBlocked(false)
         setAudioPlayer(audio)
       } catch (err) {
-        console.log('Autoplay prevented or failed:', err)
+        console.log('Muted autoplay prevented or failed:', err)
+        // Fallback: set audio object and mark blocked so UI shows control
         if (!mounted) return
+        audio.muted = true
+        audio.volume = 0.3
         setAudioBlocked(true)
         setAudioPlayer(audio)
       }

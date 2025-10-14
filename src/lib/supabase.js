@@ -46,8 +46,8 @@ export const supabase = {
               return { data, error: null };
             } catch (error) {
               console.error('Firebase select error:', error)
-              // Return empty array instead of failing completely
-              return { data: [], error: null }
+              // Return empty array and an error message so callers can handle it
+              return { data: [], error: error.message || String(error) }
             }
           }
         }
