@@ -41,7 +41,40 @@ function App() {
     if (error) {
       console.error('Error fetching wishes:', error)
     } else {
-      setWishes(data || [])
+      setWishes(normalizeWishes(data || []))
+    }
+  }
+
+  // Normalize created_at to ISO strings to avoid runtime errors when rendering
+  const normalizeWishes = (items) => {
+    return items.map((it) => {
+      const d = { ...it }
+      let createdAt = d.created_at
+      try {
+        if (createdAt && typeof createdAt.toDate === 'function') {
+          createdAt = createdAt.toDate().toISOString()
+        } else if (typeof createdAt === 'string') {
+          // already an ISO string
+        } else {
+          createdAt = new Date().toISOString()
+        }
+      } catch (e) {
+        console.error('Error normalizing created_at', e)
+        createdAt = new Date().toISOString()
+      }
+      d.created_at = createdAt
+      return d
+    })
+  }
+
+  const formatDate = (iso) => {
+    try {
+      const dt = new Date(iso)
+      if (isNaN(dt)) return ''
+      return dt.toLocaleDateString()
+    } catch (e) {
+      console.error('Error formatting date', e)
+      return ''
     }
   }
 
@@ -51,33 +84,56 @@ function App() {
   }, [])
 
   // Autoplay Quran recitation
+  const [audioBlocked, setAudioBlocked] = useState(false)
+  const [audioPlayer, setAudioPlayer] = useState(null)
+
   useEffect(() => {
-    const audio = new Audio('https://podcasts.qurancentral.com/noreen-muhammad-siddique-al-duri-via-abu-amr/055-ar-rahman.mp3')
-    audio.loop = true
-    audio.volume = 0.3 // Set volume to 30%
-    
-    // Try to play with user interaction
-    const playAudio = () => {
-      audio.play().catch(err => {
-        console.log('Audio autoplay prevented:', err)
-      })
+    let audio = null
+    let mounted = true
+    const remote = 'https://podcasts.qurancentral.com/noreen-muhammad-siddique-al-duri-via-abu-amr/055-ar-rahman.mp3'
+
+    const setupAudio = async (src) => {
+      audio = new Audio(src)
+      audio.loop = true
+      audio.volume = 0.3
+      try {
+        await audio.play()
+        if (!mounted) return
+        setAudioBlocked(false)
+        setAudioPlayer(audio)
+      } catch (err) {
+        console.log('Autoplay prevented or failed:', err)
+        if (!mounted) return
+        setAudioBlocked(true)
+        setAudioPlayer(audio)
+      }
     }
-    
-    // Attempt autoplay
-    playAudio()
-    
-    // Also try to play on first user interaction
+
+    // Prefer local file if present
+    fetch('/recitation.mp3', { method: 'HEAD' }).then(res => {
+      if (res.ok) {
+        setupAudio('/recitation.mp3')
+      } else {
+        setupAudio(remote)
+      }
+    }).catch(() => setupAudio(remote))
+
     const handleInteraction = () => {
-      playAudio()
+      if (audio && audio.paused) {
+        audio.play().catch(e => console.log('Play on interaction failed', e))
+      }
       document.removeEventListener('click', handleInteraction)
       document.removeEventListener('touchstart', handleInteraction)
     }
-    
+
     document.addEventListener('click', handleInteraction)
     document.addEventListener('touchstart', handleInteraction)
-    
+
     return () => {
-      audio.pause()
+      mounted = false
+      if (audio) {
+        try { audio.pause() } catch (e) {}
+      }
       document.removeEventListener('click', handleInteraction)
       document.removeEventListener('touchstart', handleInteraction)
     }
@@ -116,17 +172,15 @@ function App() {
             { name: wishName, message: wishMessage }
           ])
           .select()
-        
         if (error) {
           console.error('Error submitting wish:', error)
           alert(`Failed to submit wish: ${typeof error === 'string' ? error : error.message || 'Unknown error'}`)
         } else {
           console.log('Wish submitted successfully:', data)
-          // Clear form
           setWishName('')
           setWishMessage('')
-          // Refresh wishes list to show the new wish
-          await fetchWishes()
+          // Normalize and set returned wishes
+          setWishes(normalizeWishes(data || []))
           alert('Thank you! Your wish has been submitted successfully.')
         }
       } catch (error) {
@@ -421,7 +475,7 @@ function App() {
                               <div className="flex items-center justify-between mb-2">
                                 <h4 className="font-semibold text-gray-800">{wish?.name || 'Anonymous'}</h4>
                                 <span className="text-xs text-gray-500">
-                                  {wish?.created_at ? new Date(wish.created_at).toLocaleDateString() : ''}
+                                  {wish?.created_at ? formatDate(wish.created_at) : ''}
                                 </span>
                               </div>
                               <p className="text-gray-700 leading-relaxed">{wish?.message || ''}</p>
@@ -444,6 +498,29 @@ function App() {
               <p className="mt-4 text-sm">
                 Farid & Irfi
               </p>
+            </div>
+            {/* Floating audio control for mobile/autoplay-blocked */}
+            <div className="fixed bottom-6 right-6">
+              <button
+                onClick={() => {
+                  try {
+                    if (!audioPlayer) return
+                    if (audioPlayer.paused) {
+                      audioPlayer.play()
+                    } else {
+                      audioPlayer.pause()
+                    }
+                  } catch (e) {
+                    console.error('Audio control error', e)
+                  }
+                }}
+                className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg border"
+                aria-label="Play or pause recitation"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-6.518-3.759A1 1 0 007 8.256v7.488a1 1 0 001.234.97l6.518-1.58A1 1 0 0016 13.888v-2.72a1 1 0 00-1.248-.0z" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>

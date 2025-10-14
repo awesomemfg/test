@@ -58,8 +58,6 @@ export const supabase = {
           async select() {
             try {
               const wishesRef = collection(db, tableName)
-              const insertedData = []
-              
               for (const row of rows) {
                 const docData = {
                   name: row.name || 'Anonymous',
@@ -67,32 +65,31 @@ export const supabase = {
                   created_at: serverTimestamp()
                 }
                 console.log('Attempting to add document:', docData)
-                const docRef = await addDoc(wishesRef, docData)
-                console.log('Document added successfully with ID:', docRef.id)
-                // Fetch the inserted doc to get the real timestamp
-                const insertedSnap = await getDocs(query(wishesRef, orderBy('created_at', 'desc')))
-                const insertedDoc = insertedSnap.docs.find(doc => doc.id === docRef.id)
-                let insertedWish = { id: docRef.id, ...docData, created_at: new Date().toISOString() }
-                if (insertedDoc) {
-                  const d = insertedDoc.data()
-                  insertedWish = {
-                    id: docRef.id,
-                    ...d,
-                    created_at: d.created_at?.toDate?.() ? d.created_at.toDate().toISOString() : new Date().toISOString()
-                  }
-                }
-                insertedData.push(insertedWish)
+                await addDoc(wishesRef, docData)
+                console.log('Document added successfully')
               }
-              return { data: insertedData, error: null }
+              // After insert, fetch all wishes again to get the correct data
+              const q = query(wishesRef, orderBy('created_at', 'desc'))
+              const querySnapshot = await getDocs(q)
+              const data = querySnapshot.docs.map(doc => {
+                const d = doc.data();
+                let createdAt = d.created_at;
+                if (createdAt && typeof createdAt.toDate === 'function') {
+                  createdAt = createdAt.toDate().toISOString();
+                } else if (typeof createdAt === 'string') {
+                  // Already ISO string
+                } else {
+                  createdAt = new Date().toISOString();
+                }
+                return {
+                  id: doc.id,
+                  ...d,
+                  created_at: createdAt
+                };
+              });
+              return { data, error: null };
             } catch (error) {
               console.error('Firebase insert error:', error)
-              console.error('Error details:', {
-                code: error.code,
-                message: error.message,
-                details: error
-              })
-              
-              // Return a more helpful error message
               let errorMessage = 'Failed to save wish. '
               if (error.code === 'permission-denied') {
                 errorMessage += 'Please check if Firestore rules allow writing to the wishes collection.'
@@ -101,7 +98,6 @@ export const supabase = {
               } else {
                 errorMessage += error.message
               }
-              
               return { data: [], error: errorMessage }
             }
           }
