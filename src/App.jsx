@@ -108,7 +108,6 @@ function App() {
   }, [])
 
   // Autoplay Quran recitation
-  const [audioBlocked, setAudioBlocked] = useState(false)
   const audioPlayerRef = useRef(null)
   const cleanupFns = useRef(null)
   const [, forceRerender] = useState(0)
@@ -129,7 +128,7 @@ function App() {
       console.error('togglePlayPause error', e)
     }
   }
-  const [showAudioPrompt, setShowAudioPrompt] = useState(false)
+  
 
   useEffect(() => {
     let mounted = true
@@ -190,11 +189,6 @@ function App() {
       // If autoplay worked (muted or unmuted), attempt to unmute immediately (best-effort).
       if (ok) {
         try { elem.muted = false; elem.volume = 0.3 } catch (e) { console.log('unmute attempt failed', e) }
-        setAudioBlocked(false)
-        setShowAudioPrompt(false)
-      } else {
-        setAudioBlocked(true)
-        setShowAudioPrompt(true)
       }
       setAudioPlaying(!elem.paused)
       setAudioMuted(!!elem.muted)
@@ -215,8 +209,6 @@ function App() {
       try {
         await el.play()
         el.muted = false
-        setAudioBlocked(false)
-        setShowAudioPrompt(false)
         forceRerender(r => r + 1)
       } catch (e) {
         console.log('Interaction play failed', e)
@@ -645,11 +637,7 @@ function App() {
               </button>
             </div>
 
-            {showAudioPrompt && (
-              <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-white/95 p-4 rounded-xl shadow-lg border">
-                <p className="text-sm text-gray-700">Tap the play button to hear the recitation.</p>
-              </div>
-            )}
+            
           </div>
         </div>
       </div>
