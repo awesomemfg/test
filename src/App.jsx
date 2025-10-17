@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { Textarea } from '@/components/ui/textarea.jsx'
@@ -109,7 +109,8 @@ function App() {
 
   // Autoplay Quran recitation
   const [audioBlocked, setAudioBlocked] = useState(false)
-  const audioPlayerRef = { current: null }
+  const audioPlayerRef = useRef(null)
+  const cleanupFns = useRef(null)
   const [, forceRerender] = useState(0)
   const [audioPlaying, setAudioPlaying] = useState(false)
   const [audioMuted, setAudioMuted] = useState(false)
@@ -162,6 +163,11 @@ function App() {
       const elem = document.getElementById('recitation')
       if (!elem) return
 
+      elem.setAttribute('playsinline', 'true')
+      elem.setAttribute('autoplay', 'true')
+      elem.setAttribute('muted', 'true')
+      elem.preload = 'auto'
+
       // prefer local file if present
       try {
         const res = await fetch('/recitation.mp3', { method: 'HEAD' })
@@ -185,12 +191,20 @@ function App() {
       if (ok) {
         try { elem.muted = false; elem.volume = 0.3 } catch (e) { console.log('unmute attempt failed', e) }
         setAudioBlocked(false)
+        setShowAudioPrompt(false)
       } else {
         setAudioBlocked(true)
+        setShowAudioPrompt(true)
       }
       setAudioPlaying(!elem.paused)
       setAudioMuted(!!elem.muted)
       if (mounted) forceRerender(r => r + 1)
+
+      cleanupFns.current = {
+        onPlay,
+        onPause,
+        onVolume
+      }
     }
 
     setup()
@@ -209,21 +223,30 @@ function App() {
       }
       document.removeEventListener('click', onInteraction)
       document.removeEventListener('touchstart', onInteraction)
+      document.removeEventListener('pointerdown', onInteraction)
     }
 
     document.addEventListener('click', onInteraction)
     document.addEventListener('touchstart', onInteraction)
+    document.addEventListener('pointerdown', onInteraction)
 
     return () => {
       mounted = false
-      try { const el = audioPlayerRef.current || document.getElementById('recitation'); if (el) {
-        el.pause()
-        el.removeEventListener('play', () => {})
-        el.removeEventListener('pause', () => {})
-        el.removeEventListener('volumechange', () => {})
-      }} catch (e) {}
+      try {
+        const el = audioPlayerRef.current || document.getElementById('recitation')
+        if (el) {
+          el.pause()
+          if (cleanupFns.current) {
+            el.removeEventListener('play', cleanupFns.current.onPlay)
+            el.removeEventListener('pause', cleanupFns.current.onPause)
+            el.removeEventListener('volumechange', cleanupFns.current.onVolume)
+          }
+        }
+      } catch (e) {}
+      cleanupFns.current = null
       document.removeEventListener('click', onInteraction)
       document.removeEventListener('touchstart', onInteraction)
+      document.removeEventListener('pointerdown', onInteraction)
       setAudioPlaying(false)
       setAudioMuted(true)
     }
