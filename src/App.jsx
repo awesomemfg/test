@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { Textarea } from '@/components/ui/textarea.jsx'
@@ -108,8 +108,8 @@ function App() {
   }, [])
 
   // Autoplay Quran recitation
-  const [audioBlocked, setAudioBlocked] = useState(false)
-  const audioPlayerRef = { current: null }
+  const audioPlayerRef = useRef(null)
+  const cleanupFns = useRef(null)
   const [, forceRerender] = useState(0)
   const [audioPlaying, setAudioPlaying] = useState(false)
   const [audioMuted, setAudioMuted] = useState(false)
@@ -128,7 +128,6 @@ function App() {
       console.error('togglePlayPause error', e)
     }
   }
-  const [showAudioPrompt, setShowAudioPrompt] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -162,6 +161,11 @@ function App() {
       const elem = document.getElementById('recitation')
       if (!elem) return
 
+      elem.setAttribute('playsinline', 'true')
+      elem.setAttribute('autoplay', 'true')
+      elem.setAttribute('muted', 'true')
+      elem.preload = 'auto'
+
       // prefer local file if present
       try {
         const res = await fetch('/recitation.mp3', { method: 'HEAD' })
@@ -184,13 +188,16 @@ function App() {
       // If autoplay worked (muted or unmuted), attempt to unmute immediately (best-effort).
       if (ok) {
         try { elem.muted = false; elem.volume = 0.3 } catch (e) { console.log('unmute attempt failed', e) }
-        setAudioBlocked(false)
-      } else {
-        setAudioBlocked(true)
       }
       setAudioPlaying(!elem.paused)
       setAudioMuted(!!elem.muted)
       if (mounted) forceRerender(r => r + 1)
+
+      cleanupFns.current = {
+        onPlay,
+        onPause,
+        onVolume
+      }
     }
 
     setup()
@@ -201,29 +208,36 @@ function App() {
       try {
         await el.play()
         el.muted = false
-        setAudioBlocked(false)
-        setShowAudioPrompt(false)
         forceRerender(r => r + 1)
       } catch (e) {
         console.log('Interaction play failed', e)
       }
       document.removeEventListener('click', onInteraction)
       document.removeEventListener('touchstart', onInteraction)
+      document.removeEventListener('pointerdown', onInteraction)
     }
 
     document.addEventListener('click', onInteraction)
     document.addEventListener('touchstart', onInteraction)
+    document.addEventListener('pointerdown', onInteraction)
 
     return () => {
       mounted = false
-      try { const el = audioPlayerRef.current || document.getElementById('recitation'); if (el) {
-        el.pause()
-        el.removeEventListener('play', () => {})
-        el.removeEventListener('pause', () => {})
-        el.removeEventListener('volumechange', () => {})
-      }} catch (e) {}
+      try {
+        const el = audioPlayerRef.current || document.getElementById('recitation')
+        if (el) {
+          el.pause()
+          if (cleanupFns.current) {
+            el.removeEventListener('play', cleanupFns.current.onPlay)
+            el.removeEventListener('pause', cleanupFns.current.onPause)
+            el.removeEventListener('volumechange', cleanupFns.current.onVolume)
+          }
+        }
+      } catch (e) {}
+      cleanupFns.current = null
       document.removeEventListener('click', onInteraction)
       document.removeEventListener('touchstart', onInteraction)
+      document.removeEventListener('pointerdown', onInteraction)
       setAudioPlaying(false)
       setAudioMuted(true)
     }
@@ -621,12 +635,6 @@ function App() {
                 )}
               </button>
             </div>
-
-            {showAudioPrompt && (
-              <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-white/95 p-4 rounded-xl shadow-lg border">
-                <p className="text-sm text-gray-700">Tap the play button to hear the recitation.</p>
-              </div>
-            )}
           </div>
         </div>
       </div>
