@@ -108,12 +108,10 @@ function App() {
   }, [])
 
   // Autoplay Quran recitation
-  const [audioBlocked, setAudioBlocked] = useState(false)
   const audioPlayerRef = useRef(null)
   const cleanupFns = useRef(null)
-  const [, forceRerender] = useState(0)
+  const [audioReady, setAudioReady] = useState(false)
   const [audioPlaying, setAudioPlaying] = useState(false)
-  const [audioMuted, setAudioMuted] = useState(false)
 
   const togglePlayPause = async () => {
     try {
@@ -129,7 +127,6 @@ function App() {
       console.error('togglePlayPause error', e)
     }
   }
-  const [showAudioPrompt, setShowAudioPrompt] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -182,28 +179,19 @@ function App() {
       // attach listeners so UI stays in sync
       const onPlay = () => { setAudioPlaying(true) }
       const onPause = () => { setAudioPlaying(false) }
-      const onVolume = () => { setAudioMuted(!!elem.muted) }
       elem.addEventListener('play', onPlay)
       elem.addEventListener('pause', onPause)
-      elem.addEventListener('volumechange', onVolume)
 
       // If autoplay worked (muted or unmuted), attempt to unmute immediately (best-effort).
       if (ok) {
         try { elem.muted = false; elem.volume = 0.3 } catch (e) { console.log('unmute attempt failed', e) }
-        setAudioBlocked(false)
-        setShowAudioPrompt(false)
-      } else {
-        setAudioBlocked(true)
-        setShowAudioPrompt(true)
       }
       setAudioPlaying(!elem.paused)
-      setAudioMuted(!!elem.muted)
-      if (mounted) forceRerender(r => r + 1)
+      if (mounted) setAudioReady(true)
 
       cleanupFns.current = {
         onPlay,
-        onPause,
-        onVolume
+        onPause
       }
     }
 
@@ -215,9 +203,8 @@ function App() {
       try {
         await el.play()
         el.muted = false
-        setAudioBlocked(false)
-        setShowAudioPrompt(false)
-        forceRerender(r => r + 1)
+        setAudioPlaying(!el.paused)
+        setAudioReady(true)
       } catch (e) {
         console.log('Interaction play failed', e)
       }
@@ -239,7 +226,6 @@ function App() {
           if (cleanupFns.current) {
             el.removeEventListener('play', cleanupFns.current.onPlay)
             el.removeEventListener('pause', cleanupFns.current.onPause)
-            el.removeEventListener('volumechange', cleanupFns.current.onVolume)
           }
         }
       } catch (e) {}
@@ -247,8 +233,8 @@ function App() {
       document.removeEventListener('click', onInteraction)
       document.removeEventListener('touchstart', onInteraction)
       document.removeEventListener('pointerdown', onInteraction)
+      setAudioReady(false)
       setAudioPlaying(false)
-      setAudioMuted(true)
     }
   }, [])
 
@@ -614,40 +600,23 @@ function App() {
               </p>
             </div>
             {/* Floating audio control for mobile/autoplay-blocked */}
-            <div className="fixed bottom-6 right-6">
-              <button
-                onClick={() => {
-                  try {
-                    const p = audioPlayerRef.current || document.getElementById('recitation')
-                    if (!p) return
-                    if (p.paused) {
-                      p.play().catch(e => console.error('Play failed', e))
-                    } else {
-                      p.pause()
-                    }
-                    forceRerender(r => r + 1)
-                  } catch (e) {
-                    console.error('Audio control error', e)
-                  }
-                }}
-                className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg border"
-                aria-label="Play or pause recitation"
-              >
-                {audioPlayerRef.current && !audioPlayerRef.current.paused ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M6 4h2v12H6V4zm6 0h2v12h-2V4z" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-6.518-3.759A1 1 0 007 8.256v7.488a1 1 0 001.234.97l6.518-1.58A1 1 0 0016 13.888v-2.72a1 1 0 00-1.248-.0z" />
-                  </svg>
-                )}
-              </button>
-            </div>
-
-            {showAudioPrompt && (
-              <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-white/95 p-4 rounded-xl shadow-lg border">
-                <p className="text-sm text-gray-700">Tap the play button to hear the recitation.</p>
+            {audioReady && (
+              <div className="fixed bottom-6 right-6">
+                <button
+                  onClick={togglePlayPause}
+                  className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg border"
+                  aria-label="Play or pause recitation"
+                >
+                  {audioPlaying ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M6 4h2v12H6V4zm6 0h2v12h-2V4z" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-6.518-3.759A1 1 0 007 8.256v7.488a1 1 0 001.234.97l6.518-3.759A1 1 0 0016 11.512v-.224a1 1 0 00-.248-.12z" />
+                    </svg>
+                  )}
+                </button>
               </div>
             )}
           </div>
