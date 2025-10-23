@@ -468,7 +468,6 @@ function App() {
                   </a>
                   <div className="text-sm text-gray-500 space-y-1">
                     <p>Meeting ID: <span className="font-medium">{import.meta.env.VITE_ZOOM_MEETING_ID}</span></p>
-                    <p className="text-red-500">Passcode: <span className="font-medium">Contact the host for passcode</span></p>
                   </div>
                 </CardContent>
               </Card>
