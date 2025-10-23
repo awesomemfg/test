@@ -467,7 +467,7 @@ function App() {
                     </Button>
                   </a>
                   <div className="text-sm text-gray-500 space-y-1">
-                    <p>Meeting ID: <span className="font-medium">{import.meta.env.VITE_ZOOM_MEETING_ID}</span></p>
+                      <p>or click this link: <a href="https://lsu.zoom.us/j/4906157210?omn=98375303152" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">https://lsu.zoom.us/j/4906157210?omn=98375303152</a></p>
                   </div>
                 </CardContent>
               </Card>
