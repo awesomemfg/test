@@ -3,12 +3,12 @@ import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimest
 
 // Firebase configuration - replace with your actual config
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBkxmSs7fGxkgLYza2GHzjpqJkoygtHVsI",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "test-2b9ee.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "test-2b9ee",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "test-2b9ee.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "7375017909",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:7375017909:web:69aca166f1017014b42bfc"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 }
 
 // Initialize Firebase
